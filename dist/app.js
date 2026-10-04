@@ -119,7 +119,8 @@ function publicViewer() {
   }).join('');
   const characters = game.characters.map(c => {
     const s = state.characters[c.id];
-    const facts = [c.clan, c.affiliation, c.generation ? `${c.generation}-е поколение` : '', c.nature ? `Натура · ${c.nature}` : '', c.demeanor ? `Поведение · ${c.demeanor}` : ''].filter(Boolean).join(' · ');
+    const generation = c.generation ? `${c.generation}${c.generation.endsWith('-е') ? '' : '-е'} поколение` : '';
+    const facts = [c.clan, c.affiliation, generation, c.nature ? `Натура · ${c.nature}` : '', c.demeanor ? `Поведение · ${c.demeanor}` : ''].filter(Boolean).join(' · ');
     return `<article class="public-card public-person">${portrait(c)}<div><span class="eyebrow">${esc(facts || 'Гость усадьбы')}</span><h2>${esc(c.name)}</h2><p>${esc(s.death ? `Погиб · ${s.death.label}` : s.claim ? `${s.claim.confirmed ? 'Персонаж закреплён' : 'Предварительный выбор'} · ${s.claim.ownerName}` : 'Персонаж свободен')}</p>${publicLayers(c, s.level)}</div></article>`;
   }).join('');
   const npcsPublic = game.npcs.filter(n => state.npcs[n.id].visible).map(n => {
