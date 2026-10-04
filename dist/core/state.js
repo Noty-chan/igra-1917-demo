@@ -1,0 +1,150 @@
+/** Pure session transitions. The local preview is not an authorization boundary. */
+export function validateContent(content) {
+  for (const collection of ['days', 'characters', 'rooms', 'npcs']) {
+    if (!Array.isArray(content[collection])) throw new Error(`Не задан раздел ${collection}.`);
+    const ids = content[collection].map(item => item.id);
+    if (ids.some(id => typeof id !== 'string' || !/^[a-z0-9-]+$/.test(id)) || new Set(ids).size !== ids.length) {
+      throw new Error(`В разделе ${collection} нужны уникальные постоянные идентификаторы.`);
+    }
+  }
+  if (!content.days.length) throw new Error('Нужно задать хотя бы один день.');
+  for (const item of [...content.characters, ...content.rooms, ...content.npcs]) {
+    if (!Array.isArray(item.layers)) throw new Error(`У ${item.id} не заданы уровни раскрытия.`);
+  }
+  for (const character of content.characters) {
+    if (!character.goals?.main?.personal || !character.goals?.main?.game || !character.goals?.traitor) {
+      throw new Error(`У ${character.id} должны быть две основные цели и отдельная цель предателя.`);
+    }
+  }
+  return content;
+}
+
+export function hydrateState(content, saved = {}) {
+  const result = {
+    version: 2,
+    dayId: content.days.some(d => d.id === saved.dayId) ? saved.dayId : content.days[0].id,
+    characters: {}, rooms: {}, npcs: {}, notes: saved.notes && typeof saved.notes === 'object' ? saved.notes : {},
+    masquerade: {
+      value: Number.isInteger(saved.masquerade?.value) ? Math.max(0, Math.min(5, saved.masquerade.value)) : 5,
+      visible: saved.masquerade?.visible === true
+    },
+    publicViewerEnabled: saved.publicViewerEnabled === true,
+    cleanNightVisible: saved.cleanNightVisible === true
+  };
+  const level = (n, max) => Math.max(0, Math.min(max, Number.isInteger(n) ? n : 0));
+  for (const character of content.characters) {
+    const old = saved.characters?.[character.id] ?? {};
+    result.characters[character.id] = {
+      level: level(old.level, character.layers.length),
+      death: old.death && typeof old.death.label === 'string' ? old.death : null,
+      bloodPool: Number.isSafeInteger(old.bloodPool) && old.bloodPool >= 0 ? old.bloodPool : Math.max(0, Number(character.bloodPool) || 0),
+      bloodVisible: old.bloodVisible === true,
+      goals: {
+        mainVisible: old.goals?.mainVisible === true,
+        traitorVisible: old.goals?.traitorVisible === true
+      },
+      claim: old.claim && typeof old.claim.ownerId === 'string' && typeof old.claim.ownerName === 'string'
+        ? { ownerId: old.claim.ownerId, ownerName: old.claim.ownerName, confirmed: old.claim.confirmed === true } : null
+    };
+  }
+  for (const room of content.rooms) {
+    result.rooms[room.id] = { level: level(saved.rooms?.[room.id]?.level ?? room.initialLevel ?? 0, room.layers.length) };
+  }
+  for (const npc of content.npcs) {
+    result.npcs[npc.id] = { visible: saved.npcs?.[npc.id]?.visible === true, level: level(saved.npcs?.[npc.id]?.level, npc.layers.length) };
+  }
+  return result;
+}
+
+export function ownedCharacter(state, actorId) {
+  return Object.entries(state.characters).find(([, c]) => c.claim?.ownerId === actorId && c.claim.confirmed)?.[0] ?? null;
+}
+
+export function transition(content, previous, action, actor) {
+  if (!actor || !['gm', 'player'].includes(actor.role) || typeof actor.id !== 'string') throw new Error('Не выбрана роль.');
+  const state = structuredClone(previous);
+  const gm = () => { if (actor.role !== 'gm') throw new Error('Это действие доступно ведущему.'); };
+  const entity = (collection, id) => {
+    const data = content[collection].find(item => item.id === id);
+    if (!data || !state[collection][id]) throw new Error('Материал не найден.');
+    return [data, state[collection][id]];
+  };
+  const setLevel = (collection) => {
+    gm(); const [data, entry] = entity(collection, action.id);
+    if (!Number.isInteger(action.level) || action.level < 0 || action.level > data.layers.length) throw new Error('Неизвестный уровень раскрытия.');
+    entry.level = action.level;
+  };
+  switch (action.type) {
+    case 'set-day':
+      gm(); if (!content.days.some(d => d.id === action.id)) throw new Error('Такой день не задан.');
+      state.dayId = action.id;
+      if (action.id === 'day-02') state.masquerade.visible = true;
+      break;
+    case 'reserve-character': {
+      if (actor.role !== 'player') throw new Error('Выбор персонажа доступен игроку.');
+      const [, entry] = entity('characters', action.id);
+      if (entry.death) throw new Error('Этот персонаж погиб.');
+      if (entry.claim && entry.claim.ownerId !== actor.id) throw new Error('Этот персонаж уже выбран другим игроком.');
+      if (ownedCharacter(state, actor.id)) throw new Error('У вас уже есть закреплённый персонаж.');
+      for (const c of Object.values(state.characters)) if (c.claim?.ownerId === actor.id && !c.claim.confirmed) c.claim = null;
+      entry.claim = { ownerId: actor.id, ownerName: actor.name || 'Игрок', confirmed: false }; break;
+    }
+    case 'confirm-character': {
+      const [, entry] = entity('characters', action.id);
+      if (actor.role !== 'player' || entry.claim?.ownerId !== actor.id) throw new Error('Сначала выберите этого персонажа.');
+      if (entry.death) throw new Error('Этот персонаж погиб.');
+      const owned = ownedCharacter(state, actor.id);
+      if (owned && owned !== action.id) throw new Error('У вас уже есть закреплённый персонаж.');
+      entry.claim.confirmed = true; break;
+    }
+    case 'release-character': {
+      const [, entry] = entity('characters', action.id);
+      if (actor.role !== 'gm' && (!entry.claim || entry.claim.ownerId !== actor.id || entry.claim.confirmed)) throw new Error('Закреплённого персонажа может освободить ведущий.');
+      entry.claim = null; break;
+    }
+    case 'set-character-level': setLevel('characters'); break;
+    case 'set-room-level': setLevel('rooms'); break;
+    case 'set-npc-level': setLevel('npcs'); break;
+    case 'set-goal-visibility': {
+      gm(); const [, entry] = entity('characters', action.id);
+      if (!['main', 'traitor'].includes(action.kind)) throw new Error('Выберите основную цель или цель предателя.');
+      entry.goals[action.kind === 'main' ? 'mainVisible' : 'traitorVisible'] = action.visible === true;
+      break;
+    }
+    case 'set-blood-pool': {
+      gm(); const [, entry] = entity('characters', action.id);
+      if (!Number.isSafeInteger(action.value) || action.value < 0) throw new Error('Запас крови должен быть неотрицательным целым числом.');
+      entry.bloodPool = action.value; break;
+    }
+    case 'set-blood-visibility': {
+      gm(); const [, entry] = entity('characters', action.id);
+      entry.bloodVisible = action.visible === true; break;
+    }
+    case 'adjust-masquerade': {
+      gm(); if (!Number.isInteger(action.delta) || ![-2, -1, 1, 2].includes(action.delta)) throw new Error('Изменение Маскарада должно быть −2, −1, +1 или +2.');
+      state.masquerade.value = Math.max(0, Math.min(5, state.masquerade.value + action.delta)); break;
+    }
+    case 'set-masquerade-visibility':
+      gm(); state.masquerade.visible = action.visible === true; break;
+    case 'set-public-viewer':
+      gm(); state.publicViewerEnabled = action.visible === true; break;
+    case 'set-clean-night-visibility':
+      gm(); state.cleanNightVisible = action.visible === true; break;
+    case 'set-death': {
+      gm(); const [, entry] = entity('characters', action.id);
+      const day = content.days.find(d => d.id === state.dayId);
+      entry.death = action.dead ? { dayId: day.id, label: `${day.title} · ${day.dateLabel}` } : null; break;
+    }
+    case 'set-npc-visible': {
+      gm(); const [, entry] = entity('npcs', action.id); entry.visible = action.visible === true; break;
+    }
+    case 'save-note': {
+      const [, entry] = entity('characters', action.id);
+      if (actor.role !== 'player' || entry.claim?.ownerId !== actor.id || !entry.claim.confirmed) throw new Error('Заметки доступны владельцу персонажа.');
+      if (typeof action.text !== 'string' || action.text.length > 20000) throw new Error('Заметка слишком длинная.');
+      state.notes[`${actor.id}:${action.id}`] = action.text; break;
+    }
+    default: throw new Error('Неизвестное действие.');
+  }
+  return state;
+}

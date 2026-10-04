@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#14120e">
+  <meta name="description" content="ИГРА — усадебный ваншот. Сентябрь 1917 года.">
+  <title>ИГРА — усадебный ваншот</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2314120e'/%3E%3Ctext x='8' y='25' fill='%23f1d464' font-family='serif' font-size='25'%3EИ%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="login-screen" class="login-screen">
+    <form id="login-form" class="login-card" autocomplete="on">
+      <span class="eyebrow">ИГРА · СЕНТЯБРЬ 1917</span>
+      <h1>Вход в демо</h1>
+      <p>Введите данные доступа, чтобы открыть рабочую версию игры.</p>
+      <label for="login-username">Логин</label>
+      <input id="login-username" name="username" autocomplete="username" required>
+      <label for="login-password">Пароль</label>
+      <input id="login-password" name="password" type="password" autocomplete="current-password" required>
+      <p id="login-error" class="login-error" role="alert" aria-live="polite"></p>
+      <button class="gold-button" type="submit">Войти</button>
+    </form>
+  </main>
+  <div id="application" hidden>
+  <div class="workbench-note">Демо-версия · состояние сохраняется в браузере <button id="about">О версии</button></div>
+  <div class="site-shell">
+    <header class="masthead">
+      <button class="brand" data-view="house" aria-label="ИГРА — главная"><span class="brand-mark">И</span><span>ИГРА<small>Усадебный ваншот · 1917</small></span></button>
+      <div class="day-mark"><span class="eyebrow">Хроника</span><strong id="day-title"></strong><span id="day-date"></span></div>
+      <div class="role-preview"><span>Просмотр</span><div class="role-switch" role="group" aria-label="Просмотр интерфейса"><button data-role="player" aria-pressed="true">Игрок</button><button data-role="gm" aria-pressed="false">Ведущий</button></div></div>
+    </header>
+    <nav class="main-nav" aria-label="Разделы игры">
+      <button data-view="house">Особняк</button><button data-view="roster">Девять судеб</button><button data-view="sheet">Мой персонаж</button><button data-view="public" id="public-nav" hidden>Открытая информация</button><button data-view="npcs" id="npc-nav" hidden>Другие лица</button><button data-view="entry">Вход в игру</button><button data-view="gm" id="gm-nav" hidden>За ширмой</button>
+    </nav>
+    <div id="gm-tools" class="gm-bar" hidden><span>За ширмой ведущего</span><label for="day-select">Хроника <select id="day-select" aria-label="Хроника"></select></label><button data-view="gm">Цели и правила</button><button data-view="npcs">Действующие лица</button></div>
+    <main id="content"></main>
+    <footer><span>ИГРА · СЕНТЯБРЬ 1917</span><span>Рабочие материалы</span><button id="about-footer">О версии</button></footer>
+  </div>
+  <dialog id="detail" aria-labelledby="detail-title"><button class="close" aria-label="Закрыть окно">×</button><div id="detail-content"></div></dialog>
+  <div id="toast" role="status" aria-live="polite"></div>
+  </div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
