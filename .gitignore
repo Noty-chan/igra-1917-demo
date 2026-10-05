@@ -1,2 +1,5 @@
 /private/
+/.playwright-cli/
+/.playwright/
+/output/playwright/
 /ACCESS-CREDENTIALS.local.txt

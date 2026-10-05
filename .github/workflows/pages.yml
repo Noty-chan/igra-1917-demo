@@ -23,6 +23,8 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v7.0.1
+      - name: Verify session logic
+        run: npm test
       - name: Configure Pages
         uses: actions/configure-pages@v6.0.0
       - name: Upload static site

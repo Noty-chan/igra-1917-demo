@@ -1,4 +1,5 @@
 /** Pure session transitions. The local preview is not an authorization boundary. */
+import { hydrateGameplay, applyGameplay } from './gameplay.js?v=3';
 export function validateContent(content) {
   for (const collection of ['days', 'characters', 'rooms', 'npcs']) {
     if (!Array.isArray(content[collection])) throw new Error(`Не задан раздел ${collection}.`);
@@ -21,7 +22,8 @@ export function validateContent(content) {
 
 export function hydrateState(content, saved = {}) {
   const result = {
-    version: 2,
+    version: 3,
+    ...hydrateGameplay(content,saved),
     dayId: content.days.some(d => d.id === saved.dayId) ? saved.dayId : content.days[0].id,
     characters: {}, rooms: {}, npcs: {}, notes: saved.notes && typeof saved.notes === 'object' ? saved.notes : {},
     masquerade: {
@@ -39,6 +41,8 @@ export function hydrateState(content, saved = {}) {
       death: old.death && typeof old.death.label === 'string' ? old.death : null,
       bloodPool: Number.isSafeInteger(old.bloodPool) && old.bloodPool >= 0 ? old.bloodPool : Math.max(0, Number(character.bloodPool) || 0),
       bloodVisible: old.bloodVisible === true,
+      health: Array.from({length:7},(_,i)=>Number.isInteger(old.health?.[i])&&old.health[i]>=0&&old.health[i]<=3?old.health[i]:0),
+      willpowerCurrent: Number.isInteger(old.willpowerCurrent) ? Math.max(0,Math.min(character.willpower,old.willpowerCurrent)) : character.willpower,
       goals: {
         mainVisible: old.goals?.mainVisible === true,
         traitorVisible: old.goals?.traitorVisible === true
@@ -61,8 +65,10 @@ export function ownedCharacter(state, actorId) {
 }
 
 export function transition(content, previous, action, actor) {
-  if (!actor || !['gm', 'player'].includes(actor.role) || typeof actor.id !== 'string') throw new Error('Не выбрана роль.');
+  if (!actor || !['gm', 'player', 'spectator'].includes(actor.role) || typeof actor.id !== 'string') throw new Error('Не выбрана роль.');
+  if(actor.role==='spectator')throw new Error('Зритель может только просматривать открытую информацию.');
   const state = structuredClone(previous);
+  if(applyGameplay(content,state,action,actor))return state;
   const gm = () => { if (actor.role !== 'gm') throw new Error('Это действие доступно ведущему.'); };
   const entity = (collection, id) => {
     const data = content[collection].find(item => item.id === id);
@@ -112,8 +118,9 @@ export function transition(content, previous, action, actor) {
       break;
     }
     case 'set-blood-pool': {
-      gm(); const [, entry] = entity('characters', action.id);
-      if (!Number.isSafeInteger(action.value) || action.value < 0) throw new Error('Запас крови должен быть неотрицательным целым числом.');
+      const [, entry] = entity('characters', action.id);
+      if(actor.role!=='gm'&&(entry.claim?.ownerId!==actor.id||!entry.claim.confirmed||!entry.bloodVisible))throw new Error('Кровь можно менять только в своём открытом листе.');
+      if (!Number.isSafeInteger(action.value) || action.value < 0 || action.value > 100) throw new Error('Запас крови должен быть целым числом от 0 до 100.');
       entry.bloodPool = action.value; break;
     }
     case 'set-blood-visibility': {
