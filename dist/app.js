@@ -1,10 +1,10 @@
-import { gameContent as game } from './content/game.js?v=7';
-import { disciplineReference } from './content/disciplines.js?v=7';
-import { archetypeReference } from './content/archetypes.js?v=7';
-import { ownedCharacter } from './core/state.js?v=7';
-import { createLocalSession } from './core/local-session.js?v=7';
-import { healthLevels, damagePenalty, throwD10, visibleJournal } from './core/dice.js?v=7';
-import { applyAtmosphere, decorateTitles } from './core/atmosphere.js?v=7';
+import { gameContent as game } from './content/game.js?v=8';
+import { disciplineReference } from './content/disciplines.js?v=8';
+import { archetypeReference } from './content/archetypes.js?v=8';
+import { ownedCharacter } from './core/state.js?v=8';
+import { createLocalSession } from './core/local-session.js?v=8';
+import { healthLevels, damagePenalty, throwD10, visibleJournal } from './core/dice.js?v=8';
+import { applyAtmosphere, decorateTitles } from './core/atmosphere.js?v=8';
 import { requireDemoLogin } from './core/access.js';
 
 await requireDemoLogin();
@@ -119,7 +119,7 @@ function houseManagement() {
 }
 
 function roster() {
-  return `<div class="roster-stage"><div class="puppeteer" aria-hidden="true"><img src="assets/puppeteer.svg" alt=""></div><div class="roster" aria-label="Игроки: девять портретов">${game.characters.map(c=>`<button class="portrait-button ${state.characters[c.id].death?'dead':''}" data-character="${c.id}" aria-label="Открыть: ${esc(c.name)}${state.characters[c.id].death?' · погиб':''}">${portrait(c)}</button>`).join('')}</div></div>`;
+  return `<div class="roster-stage"><div class="puppeteer" aria-hidden="true"><img src="assets/puppeteer-engraving.png" alt=""></div><div class="roster" aria-label="Игроки: девять портретов">${game.characters.map(c=>`<button class="portrait-button ${state.characters[c.id].death?'dead':''}" data-character="${c.id}" aria-label="Открыть: ${esc(c.name)}${state.characters[c.id].death?' · погиб':''}">${portrait(c)}</button>`).join('')}</div></div>`;
 }
 function sheet() {
   const id=sheetCharacter(),c=game.characters.find(c=>c.id===id);
