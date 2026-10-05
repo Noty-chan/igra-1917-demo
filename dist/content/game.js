@@ -123,6 +123,24 @@ export const gameContent = {
           "group": "Таланты"
         },
         {
+          "key": "athletics",
+          "name": "Атлетика",
+          "value": 0,
+          "group": "Таланты"
+        },
+        {
+          "key": "brawl",
+          "name": "Драка",
+          "value": 0,
+          "group": "Таланты"
+        },
+        {
+          "key": "dodge",
+          "name": "Уклонение",
+          "value": 0,
+          "group": "Таланты"
+        },
+        {
           "key": "empathy",
           "name": "Эмпатия",
           "value": 2,
@@ -153,6 +171,18 @@ export const gameContent = {
           "group": "Таланты"
         },
         {
+          "key": "animalken",
+          "name": "Знание животных",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
+          "key": "crafts",
+          "name": "Ремёсла",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
           "key": "etiquette",
           "name": "Этикет",
           "value": 3,
@@ -177,6 +207,12 @@ export const gameContent = {
           "group": "Навыки"
         },
         {
+          "key": "security",
+          "name": "Безопасность",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
           "key": "stealth",
           "name": "Скрытность",
           "value": 1,
@@ -187,6 +223,18 @@ export const gameContent = {
           "name": "Выживание",
           "value": 1,
           "group": "Навыки"
+        },
+        {
+          "key": "academics",
+          "name": "Академические знания",
+          "value": 0,
+          "group": "Знания"
+        },
+        {
+          "key": "finance",
+          "name": "Финансы",
+          "value": 0,
+          "group": "Знания"
         },
         {
           "key": "investigation",
@@ -201,9 +249,33 @@ export const gameContent = {
           "group": "Знания"
         },
         {
+          "key": "linguistics",
+          "name": "Лингвистика",
+          "value": 0,
+          "group": "Знания"
+        },
+        {
+          "key": "medicine",
+          "name": "Медицина",
+          "value": 0,
+          "group": "Знания"
+        },
+        {
+          "key": "occult",
+          "name": "Оккультизм",
+          "value": 0,
+          "group": "Знания"
+        },
+        {
           "key": "politics",
           "name": "Политика",
           "value": 3,
+          "group": "Знания"
+        },
+        {
+          "key": "science",
+          "name": "Наука",
+          "value": 0,
           "group": "Знания"
         }
       ],
@@ -334,15 +406,33 @@ export const gameContent = {
           "group": "Таланты"
         },
         {
+          "key": "dodge",
+          "name": "Уклонение",
+          "value": 3,
+          "group": "Таланты"
+        },
+        {
           "key": "empathy",
           "name": "Эмпатия",
           "value": 1,
           "group": "Таланты"
         },
         {
+          "key": "expression",
+          "name": "Экспрессия",
+          "value": 0,
+          "group": "Таланты"
+        },
+        {
           "key": "intimidation",
           "name": "Запугивание",
           "value": 1,
+          "group": "Таланты"
+        },
+        {
+          "key": "leadership",
+          "name": "Лидерство",
+          "value": 0,
           "group": "Таланты"
         },
         {
@@ -358,9 +448,39 @@ export const gameContent = {
           "group": "Навыки"
         },
         {
+          "key": "crafts",
+          "name": "Ремёсла",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
+          "key": "etiquette",
+          "name": "Этикет",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
+          "key": "firearms",
+          "name": "Огнестрельное оружие",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
           "key": "melee",
           "name": "Ближний бой",
           "value": 1,
+          "group": "Навыки"
+        },
+        {
+          "key": "performance",
+          "name": "Исполнение",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
+          "key": "security",
+          "name": "Безопасность",
+          "value": 0,
           "group": "Навыки"
         },
         {
@@ -376,9 +496,33 @@ export const gameContent = {
           "group": "Навыки"
         },
         {
+          "key": "academics",
+          "name": "Академические знания",
+          "value": 0,
+          "group": "Знания"
+        },
+        {
+          "key": "finance",
+          "name": "Финансы",
+          "value": 0,
+          "group": "Знания"
+        },
+        {
           "key": "investigation",
           "name": "Расследование",
           "value": 3,
+          "group": "Знания"
+        },
+        {
+          "key": "law",
+          "name": "Закон",
+          "value": 0,
+          "group": "Знания"
+        },
+        {
+          "key": "linguistics",
+          "name": "Лингвистика",
+          "value": 0,
           "group": "Знания"
         },
         {
@@ -394,10 +538,16 @@ export const gameContent = {
           "group": "Знания"
         },
         {
-          "key": "dodge",
-          "name": "Уклонение",
-          "value": 3,
-          "group": "Таланты"
+          "key": "politics",
+          "name": "Политика",
+          "value": 0,
+          "group": "Знания"
+        },
+        {
+          "key": "science",
+          "name": "Наука",
+          "value": 0,
+          "group": "Знания"
         }
       ],
       "disciplines": [
@@ -527,6 +677,24 @@ export const gameContent = {
           "group": "Таланты"
         },
         {
+          "key": "dodge",
+          "name": "Уклонение",
+          "value": 2,
+          "group": "Таланты"
+        },
+        {
+          "key": "empathy",
+          "name": "Эмпатия",
+          "value": 0,
+          "group": "Таланты"
+        },
+        {
+          "key": "expression",
+          "name": "Экспрессия",
+          "value": 0,
+          "group": "Таланты"
+        },
+        {
           "key": "intimidation",
           "name": "Запугивание",
           "value": 2,
@@ -575,6 +743,18 @@ export const gameContent = {
           "group": "Навыки"
         },
         {
+          "key": "performance",
+          "name": "Исполнение",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
+          "key": "security",
+          "name": "Безопасность",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
           "key": "stealth",
           "name": "Скрытность",
           "value": 1,
@@ -587,6 +767,18 @@ export const gameContent = {
           "group": "Навыки"
         },
         {
+          "key": "academics",
+          "name": "Академические знания",
+          "value": 0,
+          "group": "Знания"
+        },
+        {
+          "key": "finance",
+          "name": "Финансы",
+          "value": 0,
+          "group": "Знания"
+        },
+        {
           "key": "investigation",
           "name": "Расследование",
           "value": 2,
@@ -596,6 +788,18 @@ export const gameContent = {
           "key": "law",
           "name": "Закон",
           "value": 1,
+          "group": "Знания"
+        },
+        {
+          "key": "linguistics",
+          "name": "Лингвистика",
+          "value": 0,
+          "group": "Знания"
+        },
+        {
+          "key": "medicine",
+          "name": "Медицина",
+          "value": 0,
           "group": "Знания"
         },
         {
@@ -611,10 +815,10 @@ export const gameContent = {
           "group": "Знания"
         },
         {
-          "key": "dodge",
-          "name": "Уклонение",
-          "value": 2,
-          "group": "Таланты"
+          "key": "science",
+          "name": "Наука",
+          "value": 0,
+          "group": "Знания"
         }
       ],
       "disciplines": [
@@ -737,6 +941,24 @@ export const gameContent = {
           "group": "Таланты"
         },
         {
+          "key": "athletics",
+          "name": "Атлетика",
+          "value": 0,
+          "group": "Таланты"
+        },
+        {
+          "key": "brawl",
+          "name": "Драка",
+          "value": 0,
+          "group": "Таланты"
+        },
+        {
+          "key": "dodge",
+          "name": "Уклонение",
+          "value": 0,
+          "group": "Таланты"
+        },
+        {
           "key": "empathy",
           "name": "Эмпатия",
           "value": 2,
@@ -767,6 +989,18 @@ export const gameContent = {
           "group": "Таланты"
         },
         {
+          "key": "animalken",
+          "name": "Знание животных",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
+          "key": "crafts",
+          "name": "Ремёсла",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
           "key": "etiquette",
           "name": "Этикет",
           "value": 2,
@@ -779,9 +1013,33 @@ export const gameContent = {
           "group": "Навыки"
         },
         {
+          "key": "melee",
+          "name": "Ближний бой",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
+          "key": "performance",
+          "name": "Исполнение",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
+          "key": "security",
+          "name": "Безопасность",
+          "value": 1,
+          "group": "Навыки"
+        },
+        {
           "key": "stealth",
           "name": "Скрытность",
           "value": 1,
+          "group": "Навыки"
+        },
+        {
+          "key": "survival",
+          "name": "Выживание",
+          "value": 0,
           "group": "Навыки"
         },
         {
@@ -791,8 +1049,26 @@ export const gameContent = {
           "group": "Знания"
         },
         {
+          "key": "finance",
+          "name": "Финансы",
+          "value": 0,
+          "group": "Знания"
+        },
+        {
           "key": "investigation",
           "name": "Расследование",
+          "value": 2,
+          "group": "Знания"
+        },
+        {
+          "key": "law",
+          "name": "Закон",
+          "value": 0,
+          "group": "Знания"
+        },
+        {
+          "key": "linguistics",
+          "name": "Лингвистика",
           "value": 2,
           "group": "Знания"
         },
@@ -819,18 +1095,6 @@ export const gameContent = {
           "name": "Наука",
           "value": 1,
           "group": "Знания"
-        },
-        {
-          "key": "linguistics",
-          "name": "Лингвистика",
-          "value": 2,
-          "group": "Знания"
-        },
-        {
-          "key": "security",
-          "name": "Безопасность",
-          "value": 1,
-          "group": "Навыки"
         }
       ],
       "disciplines": [
@@ -942,6 +1206,30 @@ export const gameContent = {
       ],
       "abilities": [
         {
+          "key": "alertness",
+          "name": "Внимательность",
+          "value": 0,
+          "group": "Таланты"
+        },
+        {
+          "key": "athletics",
+          "name": "Атлетика",
+          "value": 0,
+          "group": "Таланты"
+        },
+        {
+          "key": "brawl",
+          "name": "Драка",
+          "value": 0,
+          "group": "Таланты"
+        },
+        {
+          "key": "dodge",
+          "name": "Уклонение",
+          "value": 0,
+          "group": "Таланты"
+        },
+        {
           "key": "empathy",
           "name": "Эмпатия",
           "value": 3,
@@ -972,9 +1260,27 @@ export const gameContent = {
           "group": "Таланты"
         },
         {
+          "key": "animalken",
+          "name": "Знание животных",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
+          "key": "crafts",
+          "name": "Ремёсла",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
           "key": "etiquette",
           "name": "Этикет",
           "value": 2,
+          "group": "Навыки"
+        },
+        {
+          "key": "firearms",
+          "name": "Огнестрельное оружие",
+          "value": 0,
           "group": "Навыки"
         },
         {
@@ -984,9 +1290,27 @@ export const gameContent = {
           "group": "Навыки"
         },
         {
+          "key": "performance",
+          "name": "Исполнение",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
+          "key": "security",
+          "name": "Безопасность",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
           "key": "stealth",
           "name": "Скрытность",
           "value": 1,
+          "group": "Навыки"
+        },
+        {
+          "key": "survival",
+          "name": "Выживание",
+          "value": 0,
           "group": "Навыки"
         },
         {
@@ -1014,6 +1338,12 @@ export const gameContent = {
           "group": "Знания"
         },
         {
+          "key": "linguistics",
+          "name": "Лингвистика",
+          "value": 2,
+          "group": "Знания"
+        },
+        {
           "key": "medicine",
           "name": "Медицина",
           "value": 2,
@@ -1032,9 +1362,9 @@ export const gameContent = {
           "group": "Знания"
         },
         {
-          "key": "linguistics",
-          "name": "Лингвистика",
-          "value": 2,
+          "key": "science",
+          "name": "Наука",
+          "value": 0,
           "group": "Знания"
         }
       ],
@@ -1165,6 +1495,12 @@ export const gameContent = {
           "group": "Таланты"
         },
         {
+          "key": "dodge",
+          "name": "Уклонение",
+          "value": 1,
+          "group": "Таланты"
+        },
+        {
           "key": "empathy",
           "name": "Эмпатия",
           "value": 2,
@@ -1183,15 +1519,57 @@ export const gameContent = {
           "group": "Таланты"
         },
         {
+          "key": "leadership",
+          "name": "Лидерство",
+          "value": 0,
+          "group": "Таланты"
+        },
+        {
           "key": "subterfuge",
           "name": "Хитрость",
           "value": 3,
           "group": "Таланты"
         },
         {
+          "key": "animalken",
+          "name": "Знание животных",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
+          "key": "crafts",
+          "name": "Ремёсла",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
+          "key": "etiquette",
+          "name": "Этикет",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
+          "key": "firearms",
+          "name": "Огнестрельное оружие",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
           "key": "melee",
           "name": "Ближний бой",
           "value": 2,
+          "group": "Навыки"
+        },
+        {
+          "key": "performance",
+          "name": "Исполнение",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
+          "key": "security",
+          "name": "Безопасность",
+          "value": 0,
           "group": "Навыки"
         },
         {
@@ -1213,6 +1591,12 @@ export const gameContent = {
           "group": "Знания"
         },
         {
+          "key": "finance",
+          "name": "Финансы",
+          "value": 0,
+          "group": "Знания"
+        },
+        {
           "key": "investigation",
           "name": "Расследование",
           "value": 3,
@@ -1222,6 +1606,18 @@ export const gameContent = {
           "key": "law",
           "name": "Закон",
           "value": 2,
+          "group": "Знания"
+        },
+        {
+          "key": "linguistics",
+          "name": "Лингвистика",
+          "value": 0,
+          "group": "Знания"
+        },
+        {
+          "key": "medicine",
+          "name": "Медицина",
+          "value": 0,
           "group": "Знания"
         },
         {
@@ -1237,10 +1633,10 @@ export const gameContent = {
           "group": "Знания"
         },
         {
-          "key": "dodge",
-          "name": "Уклонение",
-          "value": 1,
-          "group": "Таланты"
+          "key": "science",
+          "name": "Наука",
+          "value": 0,
+          "group": "Знания"
         }
       ],
       "disciplines": [
@@ -1368,6 +1764,18 @@ export const gameContent = {
           "group": "Таланты"
         },
         {
+          "key": "brawl",
+          "name": "Драка",
+          "value": 0,
+          "group": "Таланты"
+        },
+        {
+          "key": "dodge",
+          "name": "Уклонение",
+          "value": 1,
+          "group": "Таланты"
+        },
+        {
           "key": "empathy",
           "name": "Эмпатия",
           "value": 1,
@@ -1386,6 +1794,12 @@ export const gameContent = {
           "group": "Таланты"
         },
         {
+          "key": "leadership",
+          "name": "Лидерство",
+          "value": 0,
+          "group": "Таланты"
+        },
+        {
           "key": "subterfuge",
           "name": "Хитрость",
           "value": 3,
@@ -1398,9 +1812,39 @@ export const gameContent = {
           "group": "Навыки"
         },
         {
+          "key": "crafts",
+          "name": "Ремёсла",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
+          "key": "etiquette",
+          "name": "Этикет",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
           "key": "firearms",
           "name": "Огнестрельное оружие",
           "value": 1,
+          "group": "Навыки"
+        },
+        {
+          "key": "melee",
+          "name": "Ближний бой",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
+          "key": "performance",
+          "name": "Исполнение",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
+          "key": "security",
+          "name": "Безопасность",
+          "value": 3,
           "group": "Навыки"
         },
         {
@@ -1416,6 +1860,12 @@ export const gameContent = {
           "group": "Навыки"
         },
         {
+          "key": "academics",
+          "name": "Академические знания",
+          "value": 0,
+          "group": "Знания"
+        },
+        {
           "key": "finance",
           "name": "Финансы",
           "value": 1,
@@ -1428,22 +1878,40 @@ export const gameContent = {
           "group": "Знания"
         },
         {
+          "key": "law",
+          "name": "Закон",
+          "value": 0,
+          "group": "Знания"
+        },
+        {
+          "key": "linguistics",
+          "name": "Лингвистика",
+          "value": 0,
+          "group": "Знания"
+        },
+        {
+          "key": "medicine",
+          "name": "Медицина",
+          "value": 0,
+          "group": "Знания"
+        },
+        {
+          "key": "occult",
+          "name": "Оккультизм",
+          "value": 0,
+          "group": "Знания"
+        },
+        {
           "key": "politics",
           "name": "Политика",
           "value": 1,
           "group": "Знания"
         },
         {
-          "key": "dodge",
-          "name": "Уклонение",
-          "value": 1,
-          "group": "Таланты"
-        },
-        {
-          "key": "security",
-          "name": "Безопасность",
-          "value": 3,
-          "group": "Навыки"
+          "key": "science",
+          "name": "Наука",
+          "value": 0,
+          "group": "Знания"
         }
       ],
       "disciplines": [
@@ -1567,6 +2035,18 @@ export const gameContent = {
           "group": "Таланты"
         },
         {
+          "key": "brawl",
+          "name": "Драка",
+          "value": 0,
+          "group": "Таланты"
+        },
+        {
+          "key": "dodge",
+          "name": "Уклонение",
+          "value": 0,
+          "group": "Таланты"
+        },
+        {
           "key": "empathy",
           "name": "Эмпатия",
           "value": 3,
@@ -1597,6 +2077,18 @@ export const gameContent = {
           "group": "Таланты"
         },
         {
+          "key": "animalken",
+          "name": "Знание животных",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
+          "key": "crafts",
+          "name": "Ремёсла",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
           "key": "etiquette",
           "name": "Этикет",
           "value": 3,
@@ -1609,9 +2101,21 @@ export const gameContent = {
           "group": "Навыки"
         },
         {
+          "key": "melee",
+          "name": "Ближний бой",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
           "key": "performance",
           "name": "Исполнение",
           "value": 3,
+          "group": "Навыки"
+        },
+        {
+          "key": "security",
+          "name": "Безопасность",
+          "value": 0,
           "group": "Навыки"
         },
         {
@@ -1633,9 +2137,39 @@ export const gameContent = {
           "group": "Знания"
         },
         {
+          "key": "finance",
+          "name": "Финансы",
+          "value": 0,
+          "group": "Знания"
+        },
+        {
           "key": "investigation",
           "name": "Расследование",
           "value": 1,
+          "group": "Знания"
+        },
+        {
+          "key": "law",
+          "name": "Закон",
+          "value": 0,
+          "group": "Знания"
+        },
+        {
+          "key": "linguistics",
+          "name": "Лингвистика",
+          "value": 1,
+          "group": "Знания"
+        },
+        {
+          "key": "medicine",
+          "name": "Медицина",
+          "value": 0,
+          "group": "Знания"
+        },
+        {
+          "key": "occult",
+          "name": "Оккультизм",
+          "value": 0,
           "group": "Знания"
         },
         {
@@ -1645,9 +2179,9 @@ export const gameContent = {
           "group": "Знания"
         },
         {
-          "key": "linguistics",
-          "name": "Лингвистика",
-          "value": 1,
+          "key": "science",
+          "name": "Наука",
+          "value": 0,
           "group": "Знания"
         }
       ],
@@ -1772,9 +2306,27 @@ export const gameContent = {
           "group": "Таланты"
         },
         {
+          "key": "brawl",
+          "name": "Драка",
+          "value": 0,
+          "group": "Таланты"
+        },
+        {
+          "key": "dodge",
+          "name": "Уклонение",
+          "value": 3,
+          "group": "Таланты"
+        },
+        {
           "key": "empathy",
           "name": "Эмпатия",
           "value": 1,
+          "group": "Таланты"
+        },
+        {
+          "key": "expression",
+          "name": "Экспрессия",
+          "value": 0,
           "group": "Таланты"
         },
         {
@@ -1784,10 +2336,28 @@ export const gameContent = {
           "group": "Таланты"
         },
         {
+          "key": "leadership",
+          "name": "Лидерство",
+          "value": 0,
+          "group": "Таланты"
+        },
+        {
           "key": "subterfuge",
           "name": "Хитрость",
           "value": 1,
           "group": "Таланты"
+        },
+        {
+          "key": "animalken",
+          "name": "Знание животных",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
+          "key": "crafts",
+          "name": "Ремёсла",
+          "value": 0,
+          "group": "Навыки"
         },
         {
           "key": "etiquette",
@@ -1808,6 +2378,18 @@ export const gameContent = {
           "group": "Навыки"
         },
         {
+          "key": "performance",
+          "name": "Исполнение",
+          "value": 0,
+          "group": "Навыки"
+        },
+        {
+          "key": "security",
+          "name": "Безопасность",
+          "value": 2,
+          "group": "Навыки"
+        },
+        {
           "key": "stealth",
           "name": "Скрытность",
           "value": 3,
@@ -1818,6 +2400,18 @@ export const gameContent = {
           "name": "Выживание",
           "value": 1,
           "group": "Навыки"
+        },
+        {
+          "key": "academics",
+          "name": "Академические знания",
+          "value": 0,
+          "group": "Знания"
+        },
+        {
+          "key": "finance",
+          "name": "Финансы",
+          "value": 0,
+          "group": "Знания"
         },
         {
           "key": "investigation",
@@ -1832,16 +2426,34 @@ export const gameContent = {
           "group": "Знания"
         },
         {
-          "key": "dodge",
-          "name": "Уклонение",
-          "value": 3,
-          "group": "Таланты"
+          "key": "linguistics",
+          "name": "Лингвистика",
+          "value": 0,
+          "group": "Знания"
         },
         {
-          "key": "security",
-          "name": "Безопасность",
-          "value": 2,
-          "group": "Навыки"
+          "key": "medicine",
+          "name": "Медицина",
+          "value": 0,
+          "group": "Знания"
+        },
+        {
+          "key": "occult",
+          "name": "Оккультизм",
+          "value": 0,
+          "group": "Знания"
+        },
+        {
+          "key": "politics",
+          "name": "Политика",
+          "value": 0,
+          "group": "Знания"
+        },
+        {
+          "key": "science",
+          "name": "Наука",
+          "value": 0,
+          "group": "Знания"
         }
       ],
       "disciplines": [],
@@ -2032,7 +2644,7 @@ export const gameContent = {
     },
     {
       "title": "Броски и сила воли",
-      "text": "Бросок — пул характеристики и навыка, обычно с трудностью 6. Каждый кубик, достигший трудности, даёт успех; каждая единица отменяет один обычный успех. Если обычные успехи были, но единицы отменили их все, это неудача. Полный провал — единицы при отсутствии первоначальных успехов. Один пункт временной силы воли даёт один автоматический успех, который единицы не отменяют. Особые ограничения на трату воли определяет ведущий."
+      "text": "Бросок — пул характеристики и навыка, обычно с сложностью 6. Каждый кубик, достигший сложности, даёт успех; каждая единица отменяет один обычный успех. Если обычные успехи были, но единицы отменили их все, это неудача. Полный провал — единицы при отсутствии первоначальных успехов. Один пункт временной силы воли даёт один автоматический успех, который единицы не отменяют. Особые ограничения на трату воли определяет ведущий."
     },
     {
       "title": "Личный лист",

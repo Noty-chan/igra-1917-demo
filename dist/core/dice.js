@@ -10,7 +10,7 @@ export function damagePenalty(health) {
 }
 export function evaluateRoll(dice, difficulty = 6, willpower = false) {
   if (!Array.isArray(dice) || dice.length > 50 || dice.some(n=>!Number.isInteger(n)||n<1||n>10)) throw new Error('Нужны результаты кубиков d10.');
-  if (!Number.isInteger(difficulty) || difficulty<2 || difficulty>10) throw new Error('Трудность должна быть от 2 до 10.');
+  if (!Number.isInteger(difficulty) || difficulty<2 || difficulty>10) throw new Error('Сложность должна быть от 2 до 10.');
   const raw = dice.filter(n=>n>=difficulty).length, ones = dice.filter(n=>n===1).length;
   const ordinary = Math.max(0,raw-ones), automatic = willpower ? 1 : 0;
   const successes = ordinary + automatic;
