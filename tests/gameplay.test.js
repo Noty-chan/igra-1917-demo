@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { atmosphereLevel, corruptedTitle } from '../dist/core/atmosphere.js';
 import assert from 'node:assert/strict';
 import { gameContent as game } from '../dist/content/game.js';
 import { hydrateState, transition } from '../dist/core/state.js';
@@ -106,4 +107,18 @@ test('old saved sessions migrate and journal comments persist across refresh',()
   const second=createLocalSession(game,storage);
   assert.equal(second.read().journal[0].comments[0].text,'Проверено');
   assert.equal(second.read().characters[id].claim.ownerId,'alice');
+});
+test('unrevealed masquerade does not leak through decoration; zero and full remain readable', () => {
+  const state={masquerade:{value:1,visible:false}};
+  assert.equal(atmosphereLevel(state,'player'),5);
+  assert.equal(atmosphereLevel(state,'spectator'),5);
+  assert.equal(atmosphereLevel(state,'gm'),1);
+  state.masquerade.visible=true;
+  assert.equal(atmosphereLevel(state,'player'),1);
+  const title='Ночь первая · 1917';
+  assert.equal(corruptedTitle(title,5),title);
+  assert.equal(corruptedTitle(title,0),title);
+  const marked=corruptedTitle(title,1);
+  assert.equal(marked.replace(/\p{M}/gu,''),title);
+  assert.ok(marked.includes('1917'));
 });

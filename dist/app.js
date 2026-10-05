@@ -1,8 +1,9 @@
-import { gameContent as game } from './content/game.js?v=4';
-import { archetypeReference } from './content/archetypes.js?v=4';
-import { ownedCharacter } from './core/state.js?v=4';
-import { createLocalSession } from './core/local-session.js?v=4';
-import { healthLevels, damagePenalty, throwD10, visibleJournal } from './core/dice.js?v=4';
+import { gameContent as game } from './content/game.js?v=5';
+import { archetypeReference } from './content/archetypes.js?v=5';
+import { ownedCharacter } from './core/state.js?v=5';
+import { createLocalSession } from './core/local-session.js?v=5';
+import { healthLevels, damagePenalty, throwD10, visibleJournal } from './core/dice.js?v=5';
+import { applyAtmosphere, decorateTitles } from './core/atmosphere.js?v=5';
 import { requireDemoLogin } from './core/access.js';
 
 await requireDemoLogin();
@@ -112,7 +113,7 @@ function house() {
   return `<section class="hero"><h1>${esc(day().title)}</h1><figure class="manor-frame">${illustration(game.house.image)}</figure>${prose(day().intro||game.house.intro)}</section>${masqueradePanel()}${eventCards(publishedEvents())}${game.house.history?`<section class="house-history"><h2>История дома</h2>${prose(game.house.history)}</section>`:''}<section class="locations"><div class="section-heading"><h2>Особняк</h2></div><div class="room-grid">${game.rooms.map(r=>{const s=state.rooms[r.id];return `<article class="room-card ${s.level===0?'locked':''}"><h3>${esc(r.name)}</h3>${prose(r.summary)}<button data-room="${r.id}">${s.level||role==='gm'?'Осмотреть':'Дверь закрыта'}</button>${role==='gm'?levelControl('room',r,s.level):''}</article>`;}).join('')}</div></section>`;
 }
 function roster() {
-  return `<div class="roster" aria-label="Игроки: девять портретов">${game.characters.map(c=>`<button class="portrait-button ${state.characters[c.id].death?'dead':''}" data-character="${c.id}" aria-label="Открыть: ${esc(c.name)}${state.characters[c.id].death?' · погиб':''}">${portrait(c)}</button>`).join('')}</div>`;
+  return `<div class="roster-stage"><div class="puppeteer" aria-hidden="true"><img src="assets/puppeteer.svg" alt=""></div><div class="roster" aria-label="Игроки: девять портретов">${game.characters.map(c=>`<button class="portrait-button ${state.characters[c.id].death?'dead':''}" data-character="${c.id}" aria-label="Открыть: ${esc(c.name)}${state.characters[c.id].death?' · погиб':''}">${portrait(c)}</button>`).join('')}</div></div>`;
 }
 function sheet() {
   const id=sheetCharacter(),c=game.characters.find(c=>c.id===id);
@@ -171,6 +172,7 @@ function render() {
   if(role==='spectator'&&!['public','rules','events','journal'].includes(view))view='public';
   if(role!=='gm'&&view==='public'&&!state.publicViewerEnabled)view='house';
   document.querySelector('#day-title').textContent=day().title;
+  document.querySelector('#day-title').dataset.cleanTitle=day().title;
   document.querySelector('#day-date').textContent=`${day().dateLabel} · ${day().period}`;
   const select=document.querySelector('#day-select');
   select.hidden=role!=='gm';select.innerHTML=game.days.map(d=>`<option value="${d.id}" ${d.id===state.dayId?'selected':''}>${esc(d.title)}</option>`).join('');
@@ -187,6 +189,8 @@ function render() {
   main.innerHTML=({house,roster,sheet,public:publicViewer,npcs,gm,rules,events,journal})[view]();
   main.classList.toggle('roster-view',view==='roster');
   if(view==='journal')updateRollPool();
+  applyAtmosphere(state,role);
+  if(view==='roster'){const grid=main.querySelector('.roster');document.documentElement.style.setProperty('--roster-top',`${Math.ceil(grid.getBoundingClientRect().top+scrollY)}px`);}
 }
 function renderDialog() {
   if(!opened)return;
@@ -204,6 +208,7 @@ function renderDialog() {
     html=`<h2 id="detail-title">${esc(r.name)}</h2>${r.image?illustration(r.image,'location-illustration'):''}${prose(r.summary)}${s.level||role==='gm'?layers(r,s.level):'<p>Сведения пока закрыты.</p>'}${role==='gm'?levelControl('room',r,s.level):''}`;
   }
   document.querySelector('#detail-content').innerHTML=html;
+  decorateTitles(document.querySelector('#detail-content'));
 }
 function show(kind,id){opened={kind,id};renderDialog();dialog.showModal();}
 function captureRollDraft(){
@@ -288,5 +293,9 @@ document.addEventListener('input',e=>{
 dialog.addEventListener('close',()=>{opened=null;});
 dialog.addEventListener('click',e=>{const r=dialog.getBoundingClientRect();if(e.target===dialog&&(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom))dialog.close();});
 window.addEventListener('storage',e=>{if(e.key==='igra-workbench-v2'&&session.refresh(e.newValue)){state=session.read();render();if(opened)renderDialog();}});
+function fitRoster(){if(view==='roster'){const grid=main.querySelector('.roster');if(grid)document.documentElement.style.setProperty('--roster-top',`${Math.ceil(grid.getBoundingClientRect().top+scrollY)}px`);}}
+window.addEventListener('resize',fitRoster);
+document.fonts?.ready.then(fitRoster);
+if(typeof ResizeObserver!=='undefined'){const layoutObserver=new ResizeObserver(fitRoster);layoutObserver.observe(document.querySelector('.masthead'));layoutObserver.observe(document.querySelector('.main-nav'));}
 window.addEventListener('hashchange',()=>navigate(views.includes(location.hash.slice(1))?location.hash.slice(1):'house',false));
 render();
