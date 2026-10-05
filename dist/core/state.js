@@ -1,5 +1,5 @@
 /** Pure session transitions. The local preview is not an authorization boundary. */
-import { hydrateGameplay, applyGameplay } from './gameplay.js?v=5';
+import { hydrateGameplay, applyGameplay } from './gameplay.js?v=6';
 export function validateContent(content) {
   for (const collection of ['days', 'characters', 'rooms', 'npcs']) {
     if (!Array.isArray(content[collection])) throw new Error(`Не задан раздел ${collection}.`);

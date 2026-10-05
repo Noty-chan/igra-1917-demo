@@ -1,9 +1,10 @@
-import { gameContent as game } from './content/game.js?v=5';
-import { archetypeReference } from './content/archetypes.js?v=5';
-import { ownedCharacter } from './core/state.js?v=5';
-import { createLocalSession } from './core/local-session.js?v=5';
-import { healthLevels, damagePenalty, throwD10, visibleJournal } from './core/dice.js?v=5';
-import { applyAtmosphere, decorateTitles } from './core/atmosphere.js?v=5';
+import { gameContent as game } from './content/game.js?v=6';
+import { disciplineReference } from './content/disciplines.js?v=6';
+import { archetypeReference } from './content/archetypes.js?v=6';
+import { ownedCharacter } from './core/state.js?v=6';
+import { createLocalSession } from './core/local-session.js?v=6';
+import { healthLevels, damagePenalty, throwD10, visibleJournal } from './core/dice.js?v=6';
+import { applyAtmosphere, decorateTitles } from './core/atmosphere.js?v=6';
 import { requireDemoLogin } from './core/access.js';
 
 await requireDemoLogin();
@@ -16,7 +17,7 @@ try {
   if(typeof saved?.id==='string' && typeof saved?.name==='string') playerIdentity=saved;
 } catch {}
 let state=session.read(), role='player', opened=null, selectedSheetCharacter=null;
-const views=['house','roster','sheet','public','npcs','gm','rules','events','journal'];
+const views=['house','roster','sheet','npcs','journal'];
 let view=views.includes(location.hash.slice(1))?location.hash.slice(1):'house';
 let editingEvent=null, commentFor=null, journalFilter='all', journalCount=50;
 let rollDraft={pool:5,difficulty:6,modifier:0,attribute:'',ability:'',characterId:'',willpower:false,hidden:false,note:'',label:''};
@@ -69,10 +70,10 @@ function layers(item,level,gm=role==='gm') {
 }
 function dots(value,max=5) {
   const n=Math.max(0,Math.min(max,Number(value)||0));
-  return `<span class="dot-rating" aria-label="${n} из ${max}">${'●'.repeat(n)}${'○'.repeat(max-n)}</span>`;
+  return `<span class="dot-rating" aria-label="${n} из ${max}">${Array.from({length:max},(_,i)=>`<i class="rating-dot ${i<n?'filled':''}" aria-hidden="true"></i>`).join('')}</span>`;
 }
-function dotList(items) {
-  return `<dl class="dot-list">${items.map(x=>`<div><dt>${esc(x.name)}</dt><dd>${dots(x.value,x.value>5?10:5)}</dd></div>`).join('')}</dl>`;
+function dotList(items,discipline=false) {
+  return `<dl class="dot-list">${items.map(x=>`<div><dt>${discipline?`<button class="discipline-link text-button" data-discipline="${esc(x.name)}" data-rating="${x.value}">${esc(x.name)}</button>`:esc(x.name)}</dt><dd>${dots(x.value,x.max||(x.value>5?10:5))}</dd></div>`).join('')}</dl>`;
 }
 function statGroups(c) {
   const attr=[
@@ -80,8 +81,8 @@ function statGroups(c) {
     ['Социальные',['charisma','manipulation','appearance']],
     ['Ментальные',['perception','intelligence','wits']]
   ];
-  const groups=(values)=>values.map(([name,items])=>`<section class="stat-group"><h3>${name}</h3>${dotList(items)}</section>`).join('');
-  return `<section class="sheet-section"><h2>Характеристики</h2><div class="stat-row">${groups(attr.map(([n,keys])=>[n,c.attributes.filter(a=>keys.includes(a.key))]))}</div></section><section class="sheet-section"><h2>Способности</h2><div class="stat-row">${groups(['Таланты','Навыки','Знания'].map(n=>[n,c.abilities.filter(a=>a.group===n)]))}</div></section><section class="sheet-section"><div class="stat-row">${groups([['Дисциплины',c.disciplines],['Добродетели',c.virtues],['Постоянные значения',[{name:'Сила воли',value:c.willpower},{name:'Человечность',value:c.humanity}]]])}</div></section>`;
+  const groups=(values)=>values.map(([name,items])=>`<section class="stat-group"><h3>${name}</h3>${dotList(items,name==='Дисциплины')}</section>`).join('');
+  return `<section class="sheet-section"><h2>Характеристики</h2><div class="stat-row">${groups(attr.map(([n,keys])=>[n,c.attributes.filter(a=>keys.includes(a.key))]))}</div></section><section class="sheet-section"><h2>Способности</h2><div class="stat-row">${groups(['Таланты','Навыки','Знания'].map(n=>[n,c.abilities.filter(a=>a.group===n)]))}</div></section><section class="sheet-section"><div class="stat-row">${groups([['Дисциплины',c.disciplines],['Добродетели',c.virtues],['Постоянные значения',[{name:'Сила воли',value:c.willpower,max:10},{name:'Человечность',value:c.humanity,max:10}]]])}</div></section>`;
 }
 function archetypeLinks(c) {
   return `<div class="archetype-pair"><div><span>Натура</span><button class="text-button" data-archetype="${esc(c.nature)}">${esc(c.nature)}${c.natureNote?` (${esc(c.natureNote.toLowerCase())})`:''}</button></div><div><span>Маска</span><button class="text-button" data-archetype="${esc(c.mask)}">${esc(c.mask)}</button></div></div>`;
@@ -95,7 +96,7 @@ function bloodPanel(c,s) {
   return `<section class="resource-card"><h3>Запас крови</h3><div class="resource-value"><button data-blood-step="-1" data-id="${c.id}" aria-label="Потратить кровь" ${s.bloodPool===0?'disabled':''}>−</button><input aria-label="Запас крови" type="number" min="0" max="100" step="1" value="${s.bloodPool}" data-blood="${c.id}"><button data-blood-step="1" data-id="${c.id}" aria-label="Добавить кровь">+</button></div>${role==='gm'?`<button data-blood-visible="${c.id}" data-visible="${!s.bloodVisible}">${s.bloodVisible?'Скрыть от игрока':'Показать игроку'}</button>`:''}</section>`;
 }
 function willpowerPanel(c,s) {
-  return `<section class="resource-card"><h3>Временная воля</h3><div class="resource-value"><button data-will-step="-1" data-id="${c.id}" aria-label="Потратить волю" ${s.willpowerCurrent===0?'disabled':''}>−</button><strong>${s.willpowerCurrent} / ${c.willpower}</strong><button data-will-step="1" data-id="${c.id}" aria-label="Восстановить волю" ${s.willpowerCurrent===c.willpower?'disabled':''}>+</button></div><a href="#journal" data-link-view="journal">Бросок с автоуспехом →</a></section>`;
+  return `<section class="resource-card"><h3>Воля</h3><div class="resource-value"><button data-will-step="-1" data-id="${c.id}" aria-label="Потратить волю" ${s.willpowerCurrent===0?'disabled':''}>−</button><strong>${s.willpowerCurrent} / ${c.willpower}</strong><button data-will-step="1" data-id="${c.id}" aria-label="Восстановить волю" ${s.willpowerCurrent===c.willpower?'disabled':''}>+</button></div><a href="#journal" data-link-view="journal">Бросок с автоуспехом →</a></section>`;
 }
 function healthPanel(c,s) {
   const marks=['□','/','×','✱'],labels=['Нет повреждения','Ударный','Летальный','Агравированный'];
@@ -110,8 +111,13 @@ function eventCards(items,management=false) {
   return items.map(e=>`<article class="event-card ${management&&!e.visible?'draft':''}"><span class="eyebrow">${esc(e.dayId?game.days.find(d=>d.id===e.dayId)?.title:'Все ночи')}${management?` · ${e.visible?'объявлено':'черновик'}`:''}</span><h2>${esc(e.title)}</h2>${prose(e.text)}${management?`<div class="inline-controls"><button data-edit-event="${e.id}">Изменить</button><button data-toggle-event="${e.id}" data-visible="${!e.visible}">${e.visible?'Скрыть':'Объявить'}</button><button data-delete-event="${e.id}" class="danger-button">Удалить</button></div>`:''}</article>`).join('');
 }
 function house() {
-  return `<section class="hero"><h1>${esc(day().title)}</h1><figure class="manor-frame">${illustration(game.house.image)}</figure>${prose(day().intro||game.house.intro)}</section>${masqueradePanel()}${eventCards(publishedEvents())}${game.house.history?`<section class="house-history"><h2>История дома</h2>${prose(game.house.history)}</section>`:''}<section class="locations"><div class="section-heading"><h2>Особняк</h2></div><div class="room-grid">${game.rooms.map(r=>{const s=state.rooms[r.id];return `<article class="room-card ${s.level===0?'locked':''}"><h3>${esc(r.name)}</h3>${prose(r.summary)}<button data-room="${r.id}">${s.level||role==='gm'?'Осмотреть':'Дверь закрыта'}</button>${role==='gm'?levelControl('room',r,s.level):''}</article>`;}).join('')}</div></section>`;
+  const announcements=publishedEvents();
+  return `<section class="hero"><h1>${esc(day().title)}</h1><figure class="manor-frame"><i class="frame-corner top-left" aria-hidden="true"></i><i class="frame-corner top-right" aria-hidden="true"></i><i class="frame-corner bottom-left" aria-hidden="true"></i><i class="frame-corner bottom-right" aria-hidden="true"></i>${illustration(game.house.image)}</figure>${prose(day().intro||game.house.intro)}${game.house.history?`<section class="house-history"><h2>История дома</h2>${prose(game.house.history)}</section>`:''}</section>${announcements.length?`<section class="house-announcements" aria-label="Объявления">${eventCards(announcements)}</section>`:''}<details id="house-rules" class="rule-card house-rules"><summary>Правила игры</summary><div class="rules-grid">${game.playerGuide.map(r=>`<article class="rule-card"><h2>${esc(r.title)}</h2>${prose(r.text)}</article>`).join('')}</div></details>${role==='gm'?houseManagement():masqueradePanel()}<section class="locations"><div class="section-heading"><h2>Особняк</h2></div><div class="room-grid">${game.rooms.map(r=>{const s=state.rooms[r.id];return `<article class="room-card ${s.level===0?'locked':''}"><h3>${esc(r.name)}</h3>${prose(r.summary)}<button data-room="${r.id}">${s.level||role==='gm'?'Осмотреть':'Дверь закрыта'}</button>${role==='gm'?levelControl('room',r,s.level):''}</article>`;}).join('')}</div></section>`;
 }
+function houseManagement() {
+  return `<details id="house-controls" class="rule-card"><summary>Управление ведущего</summary>${masqueradePanel()}<section class="viewer-control"><h3>Зрительский режим</h3><button data-public-viewer="${!state.publicViewerEnabled}">${state.publicViewerEnabled?'Закрыть зрительский режим':'Включить зрительский режим'}</button></section><details id="house-event-editor" class="rule-card" ${editingEvent?'open':''}><summary>Объявления и новые правила</summary>${eventEditor()}</details><details class="rule-card"><summary>Что снижает Маскарад</summary><ul class="masquerade-events">${game.masqueradeEvents.map(x=>`<li><span>${esc(x.label)}</span><strong>${x.change>0?'+':''}${x.change}</strong>${x.note?`<small>${esc(x.note)}</small>`:''}</li>`).join('')}</ul></details><details class="rule-card"><summary>Памятка ведущему</summary>${game.gmGuide.map(r=>`<details class="rule-card"><summary>${esc(r.title)}</summary>${prose(r.text)}</details>`).join('')}</details></details>`;
+}
+
 function roster() {
   return `<div class="roster-stage"><div class="puppeteer" aria-hidden="true"><img src="assets/puppeteer.svg" alt=""></div><div class="roster" aria-label="Игроки: девять портретов">${game.characters.map(c=>`<button class="portrait-button ${state.characters[c.id].death?'dead':''}" data-character="${c.id}" aria-label="Открыть: ${esc(c.name)}${state.characters[c.id].death?' · погиб':''}">${portrait(c)}</button>`).join('')}</div></div>`;
 }
@@ -125,20 +131,9 @@ function npcs() {
   const entries=game.npcs.filter(n=>role==='gm'||state.npcs[n.id].visible);
   return title('Действующие лица')+(entries.length?`<div class="npc-grid">${entries.map(n=>{const s=state.npcs[n.id];return `<article class="npc-card"><div>${portrait(n,false)}</div><div><span class="eyebrow">${role==='gm'&&!s.visible?'Скрыт · ':''}${esc(n.role)}</span><h2>${esc(n.name)}</h2>${prose(n.summary)}${layers(n,s.level)}${role==='gm'?`<button data-npc="${n.id}">${s.visible?'Скрыть':'Представить игрокам'}</button>${levelControl('npc',n,s.level)}`:''}</div></article>`;}).join('')}</div>`:'<p class="empty-state">Новые лица ещё не представлены.</p>');
 }
-function publicViewer() {
-  if(role!=='gm'&&!state.publicViewerEnabled)return title('Зрительский режим закрыт')+'<p>Ведущий ещё не включил общую сводку.</p>';
-  return title('Открытая информация')+`<p class="public-night">${esc(day().title)} · ${esc(day().period)}</p>${masqueradePanel()}${eventCards(publishedEvents())}<section class="sheet-section"><h2>Особняк</h2><div class="room-grid">${game.rooms.map(r=>`<article class="room-card"><h3>${esc(r.name)}</h3>${prose(r.summary)}${layers(r,state.rooms[r.id].level,false)}</article>`).join('')}</div></section><section class="sheet-section"><h2>Игроки</h2><div class="public-grid">${game.characters.map(c=>`<article class="public-person"><div>${portrait(c)}</div><div><h3>${esc(c.name)}</h3><p class="person-meta">${esc(publicFacts(c))}</p>${prose(publicDescription(c))}${layers(c,state.characters[c.id].level,false)}${state.characters[c.id].death?`<p class="death-date">Погиб · ${esc(state.characters[c.id].death.label)}</p>`:''}</div></article>`).join('')}</div></section>${game.npcs.some(n=>state.npcs[n.id].visible)?`<section class="sheet-section"><h2>Действующие лица</h2><div class="public-grid">${game.npcs.filter(n=>state.npcs[n.id].visible).map(n=>`<article class="public-person"><div>${portrait(n,false)}</div><div><h3>${esc(n.name)}</h3>${prose(n.summary)}${layers(n,state.npcs[n.id].level,false)}</div></article>`).join('')}</div></section>`:''}`;
-}
-function rules() {
-  return title('Памятка игроку')+`<div class="rules-grid">${game.playerGuide.map(r=>`<article class="rule-card"><h2>${esc(r.title)}</h2>${prose(r.text)}</article>`).join('')}</div>${masqueradePanel()}`;
-}
-function gm() {
-  return title('За ширмой')+`<div class="gm-dashboard"><section class="panel"><h2>Персонажи</h2><p>Листы, цели, кровь, повреждения и отметка смерти собраны у каждого персонажа.</p><button class="gold-button" data-view="roster">Открыть портреты</button></section><section class="panel"><h2>Зрители</h2><p>${state.publicViewerEnabled?'Режим «Зритель» открыт.':'Режим «Зритель» закрыт.'} В нём видны общие раскрытия; личные листы и цели скрыты. Для входа по-прежнему нужен пароль сайта.</p><button data-public-viewer="${!state.publicViewerEnabled}">${state.publicViewerEnabled?'Закрыть зрительский режим':'Включить зрительский режим'}</button></section><section class="panel"><h2>События и новые правила</h2><p>Объявляйте события и дополнения к правилам в нужную ночь.</p><button data-view="events">Управлять объявлениями</button></section><section class="panel"><h2>Кубы и комментарии</h2><p>Открытые броски видят игроки; скрытые броски и сообщения остаются за ширмой.</p><button data-view="journal">Открыть журнал</button></section></div>${masqueradePanel()}<details class="rule-card"><summary>Что снижает Маскарад</summary><ul class="masquerade-events">${game.masqueradeEvents.map(x=>`<li><span>${esc(x.label)}</span><strong>${x.change>0?'+':''}${x.change}</strong>${x.note?`<small>${esc(x.note)}</small>`:''}</li>`).join('')}</ul></details><section class="sheet-section"><h2>Памятка ведущему</h2>${game.gmGuide.map(r=>`<details class="rule-card"><summary>${esc(r.title)}</summary>${prose(r.text)}</details>`).join('')}</section>`;
-}
-function events() {
-  if(role!=='gm')return title('События')+(publishedEvents().length?eventCards(publishedEvents()):'<p class="empty-state">Пока нет новых объявлений.</p>');
+function eventEditor() {
   const e=state.events.find(e=>e.id===editingEvent);
-  return title('События и правила')+`<div class="events-layout"><form id="event-form" class="panel"><h2>${e?'Изменить объявление':'Новое объявление'}</h2><label>Название<input name="title" maxlength="120" required value="${esc(e?.title||'')}"></label><label>Текст<textarea name="text" rows="7" maxlength="10000" required>${esc(e?.text||'')}</textarea></label><label>Показывать<select name="dayId"><option value="">Во все ночи</option>${game.days.map(d=>`<option value="${d.id}" ${e?.dayId===d.id?'selected':''}>${esc(d.title)}</option>`).join('')}</select></label><label class="checkbox-label"><input type="checkbox" name="visible" ${e?.visible?'checked':''}>Объявить игрокам</label><div class="inline-controls"><button class="gold-button" type="submit">Сохранить</button>${e?'<button type="button" id="cancel-event">Новое объявление</button>':''}</div></form><section class="event-list">${eventCards(state.events,true)}</section></div>`;
+  return `<div class="events-layout"><form id="event-form" class="panel"><h2>${e?'Изменить объявление':'Новое объявление'}</h2><label>Название<input name="title" maxlength="120" required value="${esc(e?.title||'')}"></label><label>Текст<textarea name="text" rows="7" maxlength="10000" required>${esc(e?.text||'')}</textarea></label><label>Показывать<select name="dayId"><option value="">Во все ночи</option>${game.days.map(d=>`<option value="${d.id}" ${e?.dayId===d.id?'selected':''}>${esc(d.title)}</option>`).join('')}</select></label><label class="checkbox-label"><input type="checkbox" name="visible" ${e?.visible?'checked':''}>Объявить игрокам</label><div class="inline-controls"><button class="gold-button" type="submit">Сохранить</button>${e?'<button type="button" id="cancel-event">Новое объявление</button>':''}</div></form><section class="event-list">${eventCards(state.events,true)}</section></div>`;
 }
 function rollCharacter() {return game.characters.find(c=>c.id===(role==='gm'?rollDraft.characterId:owner()));}
 function rollComposer() {
@@ -167,10 +162,9 @@ function journal() {
   return title('Журнал бросков')+`<div class="journal-layout">${rollComposer()}<section class="journal-feed"><label class="feed-filter">Показать<select id="journal-filter"><option value="all" ${journalFilter==='all'?'selected':''}>${role==='gm'?'Все записи':'Все открытые'}</option>${role==='player'?`<option value="mine" ${journalFilter==='mine'?'selected':''}>Мои записи</option>`:''}${role==='gm'?`<option value="public" ${journalFilter==='public'?'selected':''}>Открытые</option><option value="hidden" ${journalFilter==='hidden'?'selected':''}>За ширмой</option>`:''}</select></label>${messages.length?messages.map(r=>`<article class="journal-entry ${r.hidden?'hidden-roll':''}"><header><strong>${esc(r.authorName)}${r.characterName?` · ${esc(r.characterName)}`:''}</strong><time datetime="${esc(r.createdAt)}">${esc(timeLabel(r.createdAt))}</time></header>${r.hidden?'<span class="eyebrow">За ширмой</span>':''}${r.type==='roll'?`<h3>${esc(r.label)}</h3><div class="dice">${r.dice.map(n=>`<span class="${n===1?'die-one':n>=r.difficulty?'die-success':''}">${n}</span>`).join('')}${r.result.automatic?'<span class="automatic-die">+1 ВОЛЯ</span>':''}</div><p class="roll-outcome ${r.result.outcome}">${esc(outcomeText(r.result))}<small>Сложность ${r.difficulty} · успехов ${r.result.raw}, единиц ${r.result.ones}</small></p>`:''}${prose(r.note)}${r.comments.map(c=>`<div class="roll-comment"><strong>${esc(c.authorName)}</strong>${prose(c.text)}</div>`).join('')}${role==='gm'?`<button class="text-button" data-comment="${r.id}">Комментарий ведущего</button>${commentFor===r.id?`<form class="comment-form" data-comment-form="${r.id}"><textarea name="comment" rows="2" maxlength="2000" required aria-label="Комментарий ведущего"></textarea><button type="submit">Добавить</button></form>`:''}`:''}</article>`).join(''):'<p class="empty-state">Пока нет записей.</p>'}${rows.length>journalCount?'<button id="more-journal">Показать ещё</button>':''}</section></div>`;
 }
 function render() {
-  if(role!=='gm'&&view==='gm')view='house';
   if(role==='spectator'&&!state.publicViewerEnabled){role='player';view='house';toast('Ведущий закрыл зрительский режим.');}
-  if(role==='spectator'&&!['public','rules','events','journal'].includes(view))view='public';
-  if(role!=='gm'&&view==='public'&&!state.publicViewerEnabled)view='house';
+  if(role==='spectator'&&view==='sheet')view='house';
+  const openPanels=Array.from(main.querySelectorAll('details[id][open]'),d=>d.id);
   document.querySelector('#day-title').textContent=day().title;
   document.querySelector('#day-title').dataset.cleanTitle=day().title;
   document.querySelector('#day-date').textContent=`${day().dateLabel} · ${day().period}`;
@@ -183,10 +177,11 @@ function render() {
   document.querySelectorAll('[data-role]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.role===role)));
   document.querySelectorAll('.main-nav [data-view]').forEach(b=>{
     const v=b.dataset.view;
-    b.hidden=v==='gm'?role!=='gm':v==='public'?(role!=='gm'&&!state.publicViewerEnabled):v==='npcs'?(role==='spectator'||role!=='gm'&&!game.npcs.some(n=>state.npcs[n.id].visible)):role==='spectator'&&!['public','rules','events','journal'].includes(v);
+    b.hidden=v==='sheet'?role==='spectator':v==='npcs'?role!=='gm'&&!game.npcs.some(n=>state.npcs[n.id].visible):false;
     b.setAttribute('aria-current',v===view?'page':'false');
   });
-  main.innerHTML=({house,roster,sheet,public:publicViewer,npcs,gm,rules,events,journal})[view]();
+  main.innerHTML=({house,roster,sheet,npcs,journal})[view]();
+  openPanels.forEach(id=>{const panel=document.getElementById(id);if(panel)panel.open=true;});
   main.classList.toggle('roster-view',view==='roster');
   if(view==='journal')updateRollPool();
   applyAtmosphere(state,role);
@@ -198,11 +193,14 @@ function renderDialog() {
   if(opened.kind==='archetype'){
     const ref=archetypeReference(opened.id);
     html=`<h2 id="detail-title">${esc(opened.id)}</h2>${prose(ref.text)}<p class="archetype-note">Подсказка для натуры и маски. Волю за натуру восстанавливайте с разрешения ведущего; маска описывает внешнее поведение.</p><a href="${esc(ref.url)}" target="_blank" rel="noopener noreferrer">Полное описание · Мир Тьмы вики ↗</a>`;
+  } else if(opened.kind==='discipline'){
+    const ref=disciplineReference(opened.id,opened.value);
+    html=`<h2 id="detail-title">${esc(opened.id)}</h2><p class="person-meta">${ref?.bookName!==opened.id?`В корнике: ${esc(ref?.bookName)} · `:''}Уровень: ${opened.value}</p>${ref?`${prose(ref.text)}<div class="discipline-powers">${ref.powers.map(p=>`<section><h3>${'●'.repeat(p.level)} · ${esc(p.title)}</h3>${prose(p.text)}</section>`).join('')}</div><p class="archetype-note">Краткая памятка по Revised. Подробные условия, броски и ограничения — в корнике; применение согласуйте с ведущим.</p><a href="${esc(ref.url)}" target="_blank" rel="noopener noreferrer">Полное описание и система · корник Revised ↗</a>`:'<p>Описание ожидается.</p>'}`;
   } else if(opened.kind==='identity'){
     html=`<h2 id="detail-title">Имя игрока</h2><form id="identity-form"><label>Имя<input name="name" maxlength="40" required value="${esc(playerIdentity.name)}"></label><button class="gold-button" type="submit">Сохранить</button></form>`;
   } else if(opened.kind==='character'){
     const c=game.characters.find(c=>c.id===opened.id),s=state.characters[c.id],mine=s.claim?.ownerId===playerIdentity.id;
-    html=`<div class="dossier-layout"><div>${portrait(c)}</div><article><h2 id="detail-title">${esc(c.name)}</h2><p class="person-meta">${esc(publicFacts(c))}</p>${prose(publicDescription(c))}${layers(c,s.level,false)}${s.death?`<p class="death-date">Погиб · ${esc(s.death.label)}</p>`:''}<div class="dialog-actions">${mine&&s.claim.confirmed?'<button class="gold-button" data-view="sheet">Открыть мой лист</button>':s.death?'<p>Персонаж недоступен для выбора.</p>':s.claim&&!mine?'<p>Персонаж уже выбран.</p>':owner()?'<p>У вас уже есть персонаж.</p>':mine?`<button class="gold-button" data-confirm="${c.id}">Подтвердить выбор</button><button data-release="${c.id}">Отменить выбор</button>`:`<button class="gold-button" data-reserve="${c.id}">Выбрать персонажа</button>`}</div></article></div>`;
+    html=`<div class="dossier-layout"><div>${portrait(c)}</div><article><h2 id="detail-title">${esc(c.name)}</h2><p class="person-meta">${esc(publicFacts(c))}</p>${prose(publicDescription(c))}${layers(c,s.level,false)}${s.death?`<p class="death-date">Погиб · ${esc(s.death.label)}</p>`:''}<div class="dialog-actions">${role==='spectator'?'':mine&&s.claim.confirmed?'<button class="gold-button" data-view="sheet">Открыть мой лист</button>':s.death?'<p>Персонаж недоступен для выбора.</p>':s.claim&&!mine?'<p>Персонаж уже выбран.</p>':owner()?'<p>У вас уже есть персонаж.</p>':mine?`<button class="gold-button" data-confirm="${c.id}">Подтвердить выбор</button><button data-release="${c.id}">Отменить выбор</button>`:`<button class="gold-button" data-reserve="${c.id}">Выбрать персонажа</button>`}</div></article></div>`;
   } else if(opened.kind==='room'){
     const r=game.rooms.find(r=>r.id===opened.id),s=state.rooms[r.id];
     html=`<h2 id="detail-title">${esc(r.name)}</h2>${r.image?illustration(r.image,'location-illustration'):''}${prose(r.summary)}${s.level||role==='gm'?layers(r,s.level):'<p>Сведения пока закрыты.</p>'}${role==='gm'?levelControl('room',r,s.level):''}`;
@@ -233,9 +231,10 @@ document.addEventListener('click',e=>{
   const link=e.target.closest('[data-link-view]');if(link){e.preventDefault();return navigate(link.dataset.linkView);}
   const b=e.target.closest('button');if(!b||b.disabled)return;const d=b.dataset;
   if(d.view)return navigate(d.view);
-  if(d.role){captureRollDraft();role=d.role;journalFilter='all';rollDraft.willpower=false;if(role==='spectator')view='public';else if(view==='gm'&&role!=='gm')view='house';dialog.close();render();return;}
-  if(d.character){if(role==='gm'||owner()===d.character){selectedSheetCharacter=d.character;return navigate('sheet');}return show('character',d.character);}
+  if(d.role){captureRollDraft();role=d.role;journalFilter='all';rollDraft.willpower=false;if(role==='spectator')view='house';dialog.close();render();return;}
+  if(d.character){if(role==='gm'||role==='player'&&owner()===d.character){selectedSheetCharacter=d.character;return navigate('sheet');}return show('character',d.character);}
   if(d.archetype)return show('archetype',d.archetype);
+  if(d.discipline){opened={kind:'discipline',id:d.discipline,value:Number(d.rating)};renderDialog();dialog.showModal();return;}
   if(d.room)return show('room',d.room);
   if(d.reserve)return act({type:'reserve-character',id:d.reserve},'Подтвердите выбранного персонажа.');
   if(d.confirm){if(act({type:'confirm-character',id:d.confirm},'Персонаж закреплён.'))navigate('sheet');return;}
