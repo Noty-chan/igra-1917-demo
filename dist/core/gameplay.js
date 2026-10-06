@@ -1,4 +1,4 @@
-import { evaluateRoll, damagePenalty } from './dice.js?v=8';
+import { evaluateRoll, damagePenalty } from './dice.js?v=10';
 
 export function hydrateGameplay(content, saved) {
   const example = {id:'event-clean-night',title:content.cleanNight.title,text:content.cleanNight.text,dayId:'day-04',visible:saved.cleanNightVisible===true};
@@ -8,7 +8,7 @@ export function hydrateGameplay(content, saved) {
 }
 
 export function applyGameplay(content, state, action, actor) {
-  const types=['set-health','set-willpower','record-roll','post-message','comment-roll','save-event','toggle-event','delete-event'];
+  const types=['set-health','set-willpower','record-roll','post-message','comment-roll','save-event','toggle-event','delete-event','delete-journal'];
   if(!types.includes(action.type))return false;
   const gm=()=>{if(actor.role!=='gm')throw new Error('Это действие доступно ведущему.')};
   const character=(id)=>{
@@ -65,6 +65,12 @@ export function applyGameplay(content, state, action, actor) {
       if(action.hidden===true)gm();
       const row=identity(),note=text(action.note,2000,true);
       state.journal.push({...row,type:'message',note});state.journal=state.journal.slice(-1000);break;
+    }
+    case 'delete-journal': {
+      const row=state.journal.find(e=>e.id===action.id);
+      if(!row)throw new Error('Запись не найдена.');
+      if(actor.role!=='gm'&&(actor.role!=='player'||row.authorId!==actor.id))throw new Error('Можно удалять только свои записи.');
+      state.journal=state.journal.filter(e=>e.id!==action.id);break;
     }
     case 'comment-roll': {
       gm();const row=state.journal.find(e=>e.id===action.id);if(!row)throw new Error('Запись не найдена.');

@@ -91,3 +91,19 @@ html[data-masquerade="0"] :is(.frame-corner,.manor-frame:before,.manor-frame:aft
 /* Keep the header ornament above the uninterrupted navigation divider. */
 .masthead:after{bottom:5px;width:120px;height:16px;background:transparent url('assets/manor-flourish.svg') center/contain no-repeat;opacity:.85}
 @media(max-width:760px){.masthead:after{bottom:4px;width:90px;height:12px}}
+
+/* Client-supplied portraits and a single, continuous manor surround. */
+.roster>.portrait-button,.roster>.portrait-button:nth-child(6){padding:0;border:1px solid #967237;box-shadow:none;background:#000}
+.roster .portrait{object-fit:cover;object-position:center}.roster>.portrait-button:after{inset:0;background-size:22px 22px}
+.death-art{filter:brightness(.68);transition:filter .25s}.portrait-button:hover .death-art,.portrait-button:focus-visible .death-art,.sheet-sidebar .death-art:hover,.dossier-layout .death-art:hover{filter:brightness(1)}
+.roster>.portrait-button.dead{box-shadow:none;background:#000}
+.manor-frame{border:1px solid #9c783c;padding:0;box-shadow:none;background:#000;margin:30px 0}
+.manor-frame:before,.manor-frame:after{display:none}
+.manor-frame .frame-corner{width:65px;height:65px;background-size:contain;top:auto;bottom:auto;left:auto;right:auto}
+.manor-frame .top-left{top:-2px;left:-2px}.manor-frame .top-right{top:-2px;right:-2px}.manor-frame .bottom-left{bottom:-2px;left:-2px}.manor-frame .bottom-right{bottom:-2px;right:-2px}
+#npc-editor{margin:20px 0}#npc-editor>summary{cursor:pointer;font-size:25px}#npc-form{display:grid;gap:16px;margin-top:18px;max-width:700px}#npc-form button{justify-self:start}.journal-entry>[data-delete-journal]{display:block;margin:12px 0}
+@media(max-width:760px){.roster>.portrait-button:after{background-size:16px 16px}.manor-frame .frame-corner{width:38px;height:38px}}
+
+.power-system{margin:14px 0;display:grid;gap:8px;font:15px var(--sans)}.power-system>div{display:grid;grid-template-columns:130px minmax(0,1fr);gap:12px}.power-system dd{margin:0;color:var(--muted)}
+
+.power-system dd{overflow-wrap:anywhere}

@@ -122,3 +122,48 @@ test('unrevealed masquerade does not leak through decoration; zero and full rema
   assert.equal(marked.replace(/\p{M}/gu,''),title);
   assert.ok(marked.includes('1917'));
 });
+
+
+test('journal deletion enforces ownership, survives hydration and never refunds willpower',()=>{
+ let s=transition(game,claimed(),roll(claimed(),{willpower:true}),alice);
+ const spent=s.characters[id].willpowerCurrent;
+ assert.throws(()=>transition(game,s,{type:'delete-journal',id:'roll-test'},bob));
+ s=transition(game,s,{type:'delete-journal',id:'roll-test'},alice);
+ assert.equal(s.characters[id].willpowerCurrent,spent);
+ assert.equal(hydrateState(game,s).journal.length,0);
+ s=transition(game,s,{type:'post-message',id:'message-gm',createdAt,note:'test',hidden:true},gm);
+ assert.throws(()=>transition(game,s,{type:'delete-journal',id:'message-gm'},alice));
+ assert.equal(transition(game,s,{type:'delete-journal',id:'message-gm'},gm).journal.length,0);
+});
+
+test('custom NPCs remain hidden until revealed, survive refresh and reject unsafe portraits',()=>{
+ const item={id:'custom-test',name:'Гость',role:'Врач',summary:'Описание',portrait:{src:'data:image/jpeg;base64,YQ=='}};
+ let s=hydrateState(game);
+ assert.throws(()=>transition(game,s,{type:'save-custom-npc',item},alice));
+ assert.throws(()=>transition(game,s,{type:'save-custom-npc',item:{...item,portrait:{src:'javascript:alert(1)'}}},gm));
+ s=transition(game,s,{type:'save-custom-npc',item},gm);
+ assert.equal(s.npcs[item.id].visible,false);
+ s=transition(game,s,{type:'set-npc-visible',id:item.id,visible:true},gm);
+ s=hydrateState(game,JSON.parse(JSON.stringify(s)));
+ assert.equal(s.npcs[item.id].visible,true);assert.equal(s.customNpcs[0].portrait.src,item.portrait.src);
+ assert.throws(()=>transition(game,s,{type:'delete-custom-npc',id:item.id},alice));
+ s=transition(game,s,{type:'delete-custom-npc',id:item.id},gm);
+ assert.equal(s.customNpcs.length,0);assert.equal(s.npcs[item.id],undefined);
+});
+
+test('a failed custom portrait save does not pretend to persist or change the session',()=>{
+ const storage={getItem:()=>null,setItem:()=>{throw new Error('quota');}};
+ const session=createLocalSession(game,storage);
+ assert.throws(()=>session.dispatch({type:'save-custom-npc',item:{id:'custom-test',name:'Гость',role:'',summary:'',portrait:null}},gm),/хранилище/);
+ assert.equal(session.read().customNpcs.length,0);
+});
+
+test('secret locations start hidden and only the GM can disclose them',()=>{
+ let s=hydrateState(game);const secret='room-altar';assert.equal(s.rooms[secret].visible,false);
+ assert.equal(s.rooms['room-vestibule'].visible,true);
+ assert.throws(()=>transition(game,s,{type:'set-room-visible',id:secret,visible:true},alice));
+ s=transition(game,s,{type:'set-room-visible',id:secret,visible:true},gm);
+ assert.equal(hydrateState(game,s).rooms[secret].visible,true);
+ s=transition(game,s,{type:'set-room-visible',id:secret,visible:false},gm);
+ assert.equal(hydrateState(game,s).rooms[secret].visible,false);
+});

@@ -1,4 +1,4 @@
-import { hydrateState, transition, validateContent } from './state.js?v=8';
+import { hydrateState, transition, validateContent } from './state.js?v=10';
 
 /** Device-local workbench only; production will use an authenticated API. */
 export function createLocalSession(content, storage, key = 'igra-workbench-v1') {
@@ -11,7 +11,7 @@ export function createLocalSession(content, storage, key = 'igra-workbench-v1') 
     isPersistent: () => available,
     dispatch(action, actor) {
       const next = transition(content, current, action, actor);
-      try { storage.setItem(key, JSON.stringify(next)); available = true; } catch { available = false; }
+      try { storage.setItem(key, JSON.stringify(next)); available = true; } catch { available = false; if(action.type==='save-custom-npc')throw new Error('Не удалось сохранить персонажа: хранилище браузера недоступно или заполнено.'); }
       current = next;
       return structuredClone(current);
     },

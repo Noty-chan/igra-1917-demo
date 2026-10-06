@@ -1,5 +1,5 @@
 /** Pure session transitions. The local preview is not an authorization boundary. */
-import { hydrateGameplay, applyGameplay } from './gameplay.js?v=8';
+import { hydrateGameplay, applyGameplay } from './gameplay.js?v=10';
 export function validateContent(content) {
   for (const collection of ['days', 'characters', 'rooms', 'npcs']) {
     if (!Array.isArray(content[collection])) throw new Error(`Не задан раздел ${collection}.`);
@@ -20,9 +20,17 @@ export function validateContent(content) {
   return content;
 }
 
+export function sanitizeCustomNpc(item) {
+  if(!item||typeof item.id!=='string'||!/^custom-[a-z0-9-]{1,80}$/.test(item.id))throw new Error('Неверный идентификатор персонажа.');
+  const field=(name,max,required=false)=>{const value=item[name];if(typeof value!=='string'||value.length>max||(required&&!value.trim()))throw new Error('Проверьте описание персонажа.');return value.trim();};
+  const src=item.portrait?.src??'';
+  if(typeof src!=='string'||src.length>350000||(src&&!/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(src)))throw new Error('Выберите изображение JPEG, PNG или WebP.');
+  return {id:item.id,name:field('name',120,true),role:field('role',120),summary:field('summary',10000),portrait:src?{src,alt:field('name',120,true)}:null,layers:[],custom:true};
+}
 export function hydrateState(content, saved = {}) {
   const result = {
-    version: 3,
+    version: 4,
+    customNpcs: Array.isArray(saved.customNpcs)?saved.customNpcs.flatMap(item=>{try{return [sanitizeCustomNpc(item)];}catch{return [];}}).filter((n,i,a)=>a.findIndex(x=>x.id===n.id)===i).slice(0,40):[],
     ...hydrateGameplay(content,saved),
     dayId: content.days.some(d => d.id === saved.dayId) ? saved.dayId : content.days[0].id,
     characters: {}, rooms: {}, npcs: {}, notes: saved.notes && typeof saved.notes === 'object' ? saved.notes : {},
@@ -52,9 +60,9 @@ export function hydrateState(content, saved = {}) {
     };
   }
   for (const room of content.rooms) {
-    result.rooms[room.id] = { level: level(saved.rooms?.[room.id]?.level ?? room.initialLevel ?? 0, room.layers.length) };
+    result.rooms[room.id] = { level: level(saved.rooms?.[room.id]?.level ?? room.initialLevel ?? 0, room.layers.length), visible:typeof saved.rooms?.[room.id]?.visible==='boolean'?saved.rooms[room.id].visible:room.initialVisible!==false };
   }
-  for (const npc of content.npcs) {
+  for (const npc of [...content.npcs,...result.customNpcs]) {
     result.npcs[npc.id] = { visible: saved.npcs?.[npc.id]?.visible === true, level: level(saved.npcs?.[npc.id]?.level, npc.layers.length) };
   }
   return result;
@@ -71,7 +79,7 @@ export function transition(content, previous, action, actor) {
   if(applyGameplay(content,state,action,actor))return state;
   const gm = () => { if (actor.role !== 'gm') throw new Error('Это действие доступно ведущему.'); };
   const entity = (collection, id) => {
-    const data = content[collection].find(item => item.id === id);
+    const data = (collection==='npcs'?[...content.npcs,...state.customNpcs]:content[collection]).find(item => item.id === id);
     if (!data || !state[collection][id]) throw new Error('Материал не найден.');
     return [data, state[collection][id]];
   };
@@ -81,6 +89,19 @@ export function transition(content, previous, action, actor) {
     entry.level = action.level;
   };
   switch (action.type) {
+    case 'save-custom-npc': {
+      gm();const item=sanitizeCustomNpc(action.item),index=state.customNpcs.findIndex(n=>n.id===item.id);
+      if(index<0){if(state.customNpcs.length>=40)throw new Error('Можно добавить до 40 действующих лиц.');state.customNpcs.push(item);}else state.customNpcs[index]=item;
+      state.npcs[item.id]??={visible:false,level:0};break;
+    }
+    case 'delete-custom-npc': {
+      gm();if(!state.customNpcs.some(n=>n.id===action.id))throw new Error('Можно удалить только добавленного персонажа.');
+      state.customNpcs=state.customNpcs.filter(n=>n.id!==action.id);delete state.npcs[action.id];break;
+    }
+    case 'set-room-visible': {
+      gm();const [,entry]=entity('rooms',action.id);entry.visible=action.visible===true;
+      if(entry.visible&&entry.level===0)entry.level=1;break;
+    }
     case 'set-day':
       gm(); if (!content.days.some(d => d.id === action.id)) throw new Error('Такой день не задан.');
       state.dayId = action.id;
