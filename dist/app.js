@@ -1,10 +1,10 @@
-import { gameContent as game } from './content/game.js?v=12';
-import { disciplineReference } from './content/disciplines.js?v=12';
-import { archetypeReference } from './content/archetypes.js?v=12';
-import { ownedCharacter } from './core/state.js?v=12';
-import { createLocalSession } from './core/local-session.js?v=12';
-import { healthLevels, damagePenalty, throwD10, visibleJournal } from './core/dice.js?v=12';
-import { applyAtmosphere, decorateTitles } from './core/atmosphere.js?v=12';
+import { gameContent as game } from './content/game.js?v=13';
+import { disciplineReference } from './content/disciplines.js?v=13';
+import { archetypeReference } from './content/archetypes.js?v=13';
+import { ownedCharacter } from './core/state.js?v=13';
+import { createLocalSession } from './core/local-session.js?v=13';
+import { healthLevels, damagePenalty, throwD10, visibleJournal } from './core/dice.js?v=13';
+import { applyAtmosphere, decorateTitles } from './core/atmosphere.js?v=13';
 import { requireDemoLogin } from './core/access.js';
 
 await requireDemoLogin();

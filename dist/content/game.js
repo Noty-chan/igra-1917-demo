@@ -324,7 +324,7 @@ export const gameContent = {
       "concealedIdentity": false,
       "role": "Вентру · Камарилья",
       "deathPortrait": {
-        "src": "assets/characters/obolensky-death-verified.webp",
+        "src": "assets/characters/obolensky-death-confirmed.webp",
         "alt": "Посмертный портрет: Алексей Сергеевич Оболенский"
       }
     },
@@ -595,7 +595,7 @@ export const gameContent = {
       "concealedIdentity": false,
       "role": "Гангрел · Нейтрал",
       "deathPortrait": {
-        "src": "assets/characters/chernov-death-verified.webp",
+        "src": "assets/characters/chernov-death-confirmed.webp",
         "alt": "Посмертный портрет: Иван Александрович Чернов"
       }
     },
@@ -870,7 +870,7 @@ export const gameContent = {
       "concealedIdentity": false,
       "role": "Бруха · Анархи",
       "deathPortrait": {
-        "src": "assets/characters/katya-death-verified.webp",
+        "src": "assets/characters/katya-death-confirmed.webp",
         "alt": "Посмертный портрет: Катя Лукина"
       },
       "natureNote": "Идея равенства"
@@ -1142,7 +1142,7 @@ export const gameContent = {
       "concealedIdentity": false,
       "role": "Тремер · Камарилья",
       "deathPortrait": {
-        "src": "assets/characters/vorontsov-death-verified.webp",
+        "src": "assets/characters/vorontsov-death-confirmed.webp",
         "alt": "Посмертный портрет: Николай Викторович Воронцов"
       }
     },
@@ -1413,7 +1413,7 @@ export const gameContent = {
       "concealedIdentity": false,
       "role": "Ласомбра · Нейтрал",
       "deathPortrait": {
-        "src": "assets/characters/father-nikolai-death-verified.webp",
+        "src": "assets/characters/father-nikolai-death-confirmed.webp",
         "alt": "Посмертный портрет: Отец Николай"
       }
     },
@@ -1688,7 +1688,7 @@ export const gameContent = {
       "concealedIdentity": false,
       "role": "Каитиф · Анархи",
       "deathPortrait": {
-        "src": "assets/characters/vedenin-death-verified.webp",
+        "src": "assets/characters/vedenin-death-confirmed.webp",
         "alt": "Посмертный портрет: Павел Игоревич Веденин"
       }
     },
@@ -1959,7 +1959,7 @@ export const gameContent = {
       "concealedIdentity": false,
       "role": "Носферату · Камарилья",
       "deathPortrait": {
-        "src": "assets/characters/senka-death-verified.webp",
+        "src": "assets/characters/senka-death-confirmed.webp",
         "alt": "Посмертный портрет: Сенька Голубев"
       }
     },
@@ -2230,7 +2230,7 @@ export const gameContent = {
       "concealedIdentity": false,
       "role": "Тореадор · Камарилья",
       "deathPortrait": {
-        "src": "assets/characters/rozanova-death-verified.webp",
+        "src": "assets/characters/rozanova-death-confirmed.webp",
         "alt": "Посмертный портрет: Софья Павловна Розанова"
       }
     },
@@ -2492,7 +2492,7 @@ export const gameContent = {
       "concealedIdentity": true,
       "role": "Смертный · Нейтрал",
       "deathPortrait": {
-        "src": "assets/characters/belozerov-death-verified.webp",
+        "src": "assets/characters/belozerov-death-confirmed.webp",
         "alt": "Посмертный портрет: Константин Белозёров"
       }
     }

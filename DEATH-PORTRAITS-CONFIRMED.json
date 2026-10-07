@@ -1,0 +1,65 @@
+[
+  {
+    "number": 1,
+    "id": "character-06",
+    "name": "Павел Игоревич Веденин",
+    "clan": "Каитиф",
+    "src": "assets/characters/vedenin-death-confirmed.webp"
+  },
+  {
+    "number": 2,
+    "id": "character-02",
+    "name": "Иван Александрович Чернов",
+    "clan": "Гангрел",
+    "src": "assets/characters/chernov-death-confirmed.webp"
+  },
+  {
+    "number": 3,
+    "id": "character-07",
+    "name": "Сенька Голубев",
+    "clan": "Носферату",
+    "src": "assets/characters/senka-death-confirmed.webp"
+  },
+  {
+    "number": 4,
+    "id": "character-09",
+    "name": "Константин Белозёров",
+    "clan": "Смертный",
+    "src": "assets/characters/belozerov-death-confirmed.webp"
+  },
+  {
+    "number": 5,
+    "id": "character-04",
+    "name": "Николай Викторович Воронцов",
+    "clan": "Тремер",
+    "src": "assets/characters/vorontsov-death-confirmed.webp"
+  },
+  {
+    "number": 6,
+    "id": "character-08",
+    "name": "Софья Павловна Розанова",
+    "clan": "Тореадор",
+    "src": "assets/characters/rozanova-death-confirmed.webp"
+  },
+  {
+    "number": 7,
+    "id": "character-03",
+    "name": "Катя Лукина",
+    "clan": "Бруха",
+    "src": "assets/characters/katya-death-confirmed.webp"
+  },
+  {
+    "number": 8,
+    "id": "character-05",
+    "name": "Отец Николай",
+    "clan": "Ласомбра",
+    "src": "assets/characters/father-nikolai-death-confirmed.webp"
+  },
+  {
+    "number": 9,
+    "id": "character-01",
+    "name": "Алексей Сергеевич Оболенский",
+    "clan": "Вентру",
+    "src": "assets/characters/obolensky-death-confirmed.webp"
+  }
+]
