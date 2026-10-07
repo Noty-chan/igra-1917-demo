@@ -6,7 +6,7 @@ export const gameContent = {
   "house": {
     "title": "Особняк",
     "image": {
-      "src": "assets/manor-night.png",
+      "src": "assets/manor-fenced.webp",
       "alt": "Старая усадьба среди осеннего сада",
       "position": "50% 54%"
     },
