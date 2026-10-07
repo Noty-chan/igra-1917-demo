@@ -107,3 +107,9 @@ html[data-masquerade="0"] :is(.frame-corner,.manor-frame:before,.manor-frame:aft
 .power-system{margin:14px 0;display:grid;gap:8px;font:15px var(--sans)}.power-system>div{display:grid;grid-template-columns:130px minmax(0,1fr);gap:12px}.power-system dd{margin:0;color:var(--muted)}
 
 .power-system dd{overflow-wrap:anywhere}
+
+/* Manor introduction flows directly into locations. */
+.hero{max-width:none}.house-copy{text-align:left;margin:24px 0 32px}.house-copy p{max-width:none;font-size:20px;line-height:1.65}.house-copy p+p{margin-top:18px}
+.portrait-button:not(.dead) .portrait{transition:filter .25s}.portrait-button:not(.dead):hover .portrait,.portrait-button:not(.dead):focus-visible .portrait{filter:brightness(1.15)}
+.room-preview{display:block;width:100%;height:auto;object-fit:contain}.location-illustration{height:auto;max-height:none;object-fit:contain}
+@media(max-width:760px){.house-copy p{font-size:18px}}

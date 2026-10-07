@@ -1,10 +1,10 @@
-import { gameContent as game } from './content/game.js?v=10';
-import { disciplineReference } from './content/disciplines.js?v=10';
-import { archetypeReference } from './content/archetypes.js?v=10';
-import { ownedCharacter } from './core/state.js?v=10';
-import { createLocalSession } from './core/local-session.js?v=10';
-import { healthLevels, damagePenalty, throwD10, visibleJournal } from './core/dice.js?v=10';
-import { applyAtmosphere, decorateTitles } from './core/atmosphere.js?v=10';
+import { gameContent as game } from './content/game.js?v=11';
+import { disciplineReference } from './content/disciplines.js?v=11';
+import { archetypeReference } from './content/archetypes.js?v=11';
+import { ownedCharacter } from './core/state.js?v=11';
+import { createLocalSession } from './core/local-session.js?v=11';
+import { healthLevels, damagePenalty, throwD10, visibleJournal } from './core/dice.js?v=11';
+import { applyAtmosphere, decorateTitles } from './core/atmosphere.js?v=11';
 import { requireDemoLogin } from './core/access.js';
 
 await requireDemoLogin();
@@ -116,7 +116,11 @@ function eventCards(items,management=false) {
 }
 function house() {
   const announcements=publishedEvents();
-  return `<section class="hero"><h1>${esc(day().title)}</h1><figure class="manor-frame"><i class="frame-corner top-left" aria-hidden="true"></i><i class="frame-corner top-right" aria-hidden="true"></i><i class="frame-corner bottom-left" aria-hidden="true"></i><i class="frame-corner bottom-right" aria-hidden="true"></i>${illustration(game.house.image)}</figure>${prose(game.house.intro)}${prose(day().intro)}${game.house.history?`<section class="house-history"><h2>История дома</h2>${prose(game.house.history)}</section>`:''}</section>${announcements.length?`<section class="house-announcements" aria-label="Объявления">${eventCards(announcements)}</section>`:''}<details id="house-rules" class="rule-card house-rules"><summary>Правила игры</summary><div class="rules-grid">${game.playerGuide.map(r=>`<article class="rule-card"><h2>${esc(r.title)}</h2>${prose(r.text)}</article>`).join('')}</div></details>${role==='gm'?houseManagement():masqueradePanel()}<section class="locations"><div class="section-heading"><h2>Особняк</h2></div><div class="room-grid">${game.rooms.filter(r=>role==='gm'||state.rooms[r.id].visible).map(r=>{const s=state.rooms[r.id];return `<article class="room-card ${s.level===0?'locked':''}"><h3>${esc(r.name)}</h3>${prose(r.summary)}<button data-room="${r.id}">${s.level||role==='gm'?'Осмотреть':'Дверь закрыта'}</button>${role==='gm'?`<button data-room-visible="${r.id}">${s.visible?'Скрыть локацию':'Открыть игрокам'}</button>${levelControl('room',r,s.level)}`:''}</article>`;}).join('')}</div></section>`;
+  const rooms=game.rooms.filter(r=>role==='gm'||state.rooms[r.id].visible).map(r=>{
+    const s=state.rooms[r.id];
+    return `<article class="room-card ${s.level===0?'locked':''}"><h3>${esc(r.name)}</h3>${r.image?illustration(r.image,'room-preview'):''}${prose(r.summary)}<button data-room="${r.id}">${s.level||role==='gm'?'Осмотреть':'Дверь закрыта'}</button>${role==='gm'?`<button data-room-visible="${r.id}">${s.visible?'Скрыть локацию':'Открыть игрокам'}</button>${levelControl('room',r,s.level)}`:''}</article>`;
+  }).join('');
+  return `<section class="hero"><h1>Особняк Вяземских</h1><figure class="manor-frame"><i class="frame-corner top-left" aria-hidden="true"></i><i class="frame-corner top-right" aria-hidden="true"></i><i class="frame-corner bottom-left" aria-hidden="true"></i><i class="frame-corner bottom-right" aria-hidden="true"></i>${illustration(game.house.image)}</figure><div class="house-copy">${prose(game.house.intro.replace(/\n/g,' '))}${prose(game.house.history.replace(/\n/g,' '))}</div></section><section class="locations"><div class="section-heading"><h2>Локации</h2></div><div class="room-grid">${rooms}</div></section>${announcements.length?`<section class="house-announcements" aria-label="Объявления">${eventCards(announcements)}</section>`:''}<details id="house-rules" class="rule-card house-rules"><summary>Правила игры</summary><div class="rules-grid">${game.playerGuide.map(r=>`<article class="rule-card"><h2>${esc(r.title)}</h2>${prose(r.text)}</article>`).join('')}</div></details>${role==='gm'?houseManagement():masqueradePanel()}`;
 }
 function houseManagement() {
   return `<details id="house-controls" class="rule-card"><summary>Управление ведущего</summary>${masqueradePanel()}<section class="viewer-control"><h3>Зрительский режим</h3><button data-public-viewer="${!state.publicViewerEnabled}">${state.publicViewerEnabled?'Закрыть зрительский режим':'Включить зрительский режим'}</button></section><details id="house-event-editor" class="rule-card" ${editingEvent?'open':''}><summary>Объявления и новые правила</summary>${eventEditor()}</details><details class="rule-card"><summary>Что снижает Маскарад</summary><ul class="masquerade-events">${game.masqueradeEvents.map(x=>`<li><span>${esc(x.label)}</span><strong>${x.change>0?'+':''}${x.change}</strong>${x.note?`<small>${esc(x.note)}</small>`:''}</li>`).join('')}</ul></details><details class="rule-card"><summary>Памятка ведущему</summary>${game.gmGuide.map(r=>`<details class="rule-card"><summary>${esc(r.title)}</summary>${prose(r.text)}</details>`).join('')}</details></details>`;
@@ -209,10 +213,10 @@ function renderDialog() {
   let html='';
   if(opened.kind==='archetype'){
     const ref=archetypeReference(opened.id);
-    html=`<h2 id="detail-title">${esc(opened.id)}</h2>${prose(ref.text)}<p class="archetype-note">Подсказка для натуры и маски. Волю за натуру восстанавливайте с разрешения ведущего; маска описывает внешнее поведение.</p><a href="${esc(ref.url)}" target="_blank" rel="noopener noreferrer">Полное описание · Мир Тьмы вики ↗</a>`;
+    html=`<h2 id="detail-title">${esc(opened.id)}</h2>${prose(ref.text)}<a href="${esc(ref.url)}" target="_blank" rel="noopener noreferrer">Полное описание · Мир Тьмы вики ↗</a>`;
   } else if(opened.kind==='discipline'){
     const ref=disciplineReference(opened.id,opened.value);
-    html=`<h2 id="detail-title">${esc(opened.id)}</h2><p class="person-meta">${ref?.bookName!==opened.id?`В корнике: ${esc(ref?.bookName)} · `:''}Уровень: ${opened.value}</p>${ref?`${prose(ref.text)}<div class="discipline-powers">${ref.powers.map(p=>`<section><h3>${'●'.repeat(p.level)} · ${esc(p.title)}</h3>${prose(p.text)}<dl class="power-system">${[['Бросок',p.roll],['Сложность',p.difficulty],['Цена',p.cost],['Активация / срок',p.duration]].filter(([,value])=>value).map(([key,value])=>`<div><dt>${esc(key)}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl><a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer">Полная формулировка способности ↗</a></section>`).join('')}</div><p class="archetype-note">Памятка по механике Revised. Полный текст, таблицы успехов и исключения доступны по ссылке у каждой способности.</p><a href="${esc(ref.url)}" target="_blank" rel="noopener noreferrer">Полное описание и система · корник Revised ↗</a>`:'<p>Описание ожидается.</p>'}`;
+    html=`<h2 id="detail-title">${esc(opened.id)}</h2><p class="person-meta">${ref?.bookName!==opened.id?`В корнике: ${esc(ref?.bookName)} · `:''}Уровень: ${opened.value}</p>${ref?`${ref.powers.length?'':prose(ref.text)}<div class="discipline-powers">${ref.powers.map(p=>`<section><h3>${'●'.repeat(p.level)} · ${esc(p.title)}</h3><dl class="power-system">${[['Пул броска',p.roll],['Сложность',p.difficulty],['Цена',p.cost],['Активация / срок',p.duration]].filter(([,value])=>value).map(([key,value])=>`<div><dt>${esc(key)}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl><a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer">Полная формулировка способности ↗</a></section>`).join('')}</div>${ref.powers.length?'':`<a href="${esc(ref.url)}" target="_blank" rel="noopener noreferrer">Способность в корнике ↗</a>`}`:'<p>Описание ожидается.</p>'}`;
   } else if(opened.kind==='identity'){
     html=`<h2 id="detail-title">Имя игрока</h2><form id="identity-form"><label>Имя<input name="name" maxlength="40" required value="${esc(playerIdentity.name)}"></label><button class="gold-button" type="submit">Сохранить</button></form>`;
   } else if(opened.kind==='character'){

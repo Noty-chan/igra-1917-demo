@@ -324,7 +324,7 @@ export const gameContent = {
       "concealedIdentity": false,
       "role": "Вентру · Камарилья",
       "deathPortrait": {
-        "src": "assets/characters/obolensky-death-client.webp",
+        "src": "assets/characters/obolensky-death-verified.webp",
         "alt": "Посмертный портрет: Алексей Сергеевич Оболенский"
       }
     },
@@ -595,7 +595,7 @@ export const gameContent = {
       "concealedIdentity": false,
       "role": "Гангрел · Нейтрал",
       "deathPortrait": {
-        "src": "assets/characters/chernov-death-client.webp",
+        "src": "assets/characters/chernov-death-verified.webp",
         "alt": "Посмертный портрет: Иван Александрович Чернов"
       }
     },
@@ -870,7 +870,7 @@ export const gameContent = {
       "concealedIdentity": false,
       "role": "Бруха · Анархи",
       "deathPortrait": {
-        "src": "assets/characters/katya-death-client.webp",
+        "src": "assets/characters/katya-death-verified.webp",
         "alt": "Посмертный портрет: Катя Лукина"
       },
       "natureNote": "Идея равенства"
@@ -1142,7 +1142,7 @@ export const gameContent = {
       "concealedIdentity": false,
       "role": "Тремер · Камарилья",
       "deathPortrait": {
-        "src": "assets/characters/vorontsov-death-client.webp",
+        "src": "assets/characters/vorontsov-death-verified.webp",
         "alt": "Посмертный портрет: Николай Викторович Воронцов"
       }
     },
@@ -1413,7 +1413,7 @@ export const gameContent = {
       "concealedIdentity": false,
       "role": "Ласомбра · Нейтрал",
       "deathPortrait": {
-        "src": "assets/characters/father-nikolai-death-client.webp",
+        "src": "assets/characters/father-nikolai-death-verified.webp",
         "alt": "Посмертный портрет: Отец Николай"
       }
     },
@@ -1688,7 +1688,7 @@ export const gameContent = {
       "concealedIdentity": false,
       "role": "Каитиф · Анархи",
       "deathPortrait": {
-        "src": "assets/characters/vedenin-death-client.webp",
+        "src": "assets/characters/vedenin-death-verified.webp",
         "alt": "Посмертный портрет: Павел Игоревич Веденин"
       }
     },
@@ -1959,7 +1959,7 @@ export const gameContent = {
       "concealedIdentity": false,
       "role": "Носферату · Камарилья",
       "deathPortrait": {
-        "src": "assets/characters/senka-death-client.webp",
+        "src": "assets/characters/senka-death-verified.webp",
         "alt": "Посмертный портрет: Сенька Голубев"
       }
     },
@@ -2230,7 +2230,7 @@ export const gameContent = {
       "concealedIdentity": false,
       "role": "Тореадор · Камарилья",
       "deathPortrait": {
-        "src": "assets/characters/rozanova-death-client.webp",
+        "src": "assets/characters/rozanova-death-verified.webp",
         "alt": "Посмертный портрет: Софья Павловна Розанова"
       }
     },
@@ -2492,7 +2492,7 @@ export const gameContent = {
       "concealedIdentity": true,
       "role": "Смертный · Нейтрал",
       "deathPortrait": {
-        "src": "assets/characters/belozerov-death-client.webp",
+        "src": "assets/characters/belozerov-death-verified.webp",
         "alt": "Посмертный портрет: Константин Белозёров"
       }
     }
@@ -2502,7 +2502,10 @@ export const gameContent = {
       "id": "room-basement",
       "name": "Подвальные помещения",
       "summary": "То, где вы оказались изначально… Зал собраний, коридор с вашими комнатами, что были похожи на комнаты гостей, но чуть…",
-      "image": null,
+      "image": {
+        "src": "assets/locations/room-basement.webp",
+        "alt": "Подвальные помещения"
+      },
       "initialLevel": 1,
       "initialVisible": true,
       "layers": [
@@ -2516,7 +2519,10 @@ export const gameContent = {
       "id": "room-vestibule",
       "name": "Вестибюль",
       "summary": "Помещение, встречающее гостей. Соединено с просторными коридорами, что ведут в другие помещения. По центру располагается…",
-      "image": null,
+      "image": {
+        "src": "assets/locations/room-vestibule.webp",
+        "alt": "Вестибюль"
+      },
       "initialLevel": 1,
       "initialVisible": true,
       "layers": [
@@ -2530,7 +2536,10 @@ export const gameContent = {
       "id": "room-ballroom",
       "name": "Бальный Зал",
       "summary": "Вытянутый, просторный. Находиться в восточной части особняка. В начале вечера там зачастую играют музыканты и танцуют…",
-      "image": null,
+      "image": {
+        "src": "assets/locations/room-ballroom.webp",
+        "alt": "Бальный Зал"
+      },
       "initialLevel": 1,
       "initialVisible": true,
       "layers": [
@@ -2544,7 +2553,10 @@ export const gameContent = {
       "id": "room-01",
       "name": "Банкетные залы",
       "summary": "Есть несколько залов для кушаний, на первом этаже – больше, на втором – небольшая личная обеденная. Кухня так же находиться…",
-      "image": null,
+      "image": {
+        "src": "assets/locations/room-01.webp",
+        "alt": "Банкетные залы"
+      },
       "initialLevel": 1,
       "initialVisible": true,
       "layers": [
@@ -2558,7 +2570,10 @@ export const gameContent = {
       "id": "room-02",
       "name": "Библиотека",
       "summary": "Поговаривают, в этом помещении есть оккультная литература. Кто знает, есть ли там на самом деле что-то стоящее? В библиотеке…",
-      "image": null,
+      "image": {
+        "src": "assets/locations/room-02.webp",
+        "alt": "Библиотека"
+      },
       "initialLevel": 1,
       "initialVisible": true,
       "layers": [
@@ -2572,7 +2587,10 @@ export const gameContent = {
       "id": "room-stage",
       "name": "Сцена",
       "summary": "Небольшая сцена в западной части особняка. Иногда там кто-то играет и поёт. Говорят, 4 ночью намечается постановка с…",
-      "image": null,
+      "image": {
+        "src": "assets/locations/room-stage.webp",
+        "alt": "Сцена"
+      },
       "initialLevel": 1,
       "initialVisible": true,
       "layers": [
@@ -2586,7 +2604,10 @@ export const gameContent = {
       "id": "room-03",
       "name": "Коридоры второго этажа",
       "summary": "Коридоры второго этажа располагаются прямоугольником. Между множественными комнатами для гостей есть несколько приватных…",
-      "image": null,
+      "image": {
+        "src": "assets/locations/room-03.webp",
+        "alt": "Коридоры второго этажа"
+      },
       "initialLevel": 1,
       "initialVisible": true,
       "layers": [
@@ -2597,10 +2618,30 @@ export const gameContent = {
       ]
     },
     {
+      "id": "room-garden",
+      "name": "Сад",
+      "summary": "Старый сад между оградой и особняком.",
+      "initialLevel": 1,
+      "initialVisible": true,
+      "layers": [
+        {
+          "title": "Описание",
+          "text": "Между оградой и особняком лежит старый сад. Каменные дорожки покрыты осенними листьями, по краям стоят декоративные урны и заросшие клумбы. За высокой кованой оградой темнеет лес."
+        }
+      ],
+      "image": {
+        "src": "assets/locations/room-garden.webp",
+        "alt": "Сад"
+      }
+    },
+    {
       "id": "room-04",
       "name": "Лес",
       "summary": "Окружает поместье со всех сторон… Пусть к свободе или к верной гибели?",
-      "image": null,
+      "image": {
+        "src": "assets/locations/room-04.webp",
+        "alt": "Лес"
+      },
       "initialLevel": 1,
       "initialVisible": true,
       "layers": [
@@ -2614,7 +2655,10 @@ export const gameContent = {
       "id": "room-altar",
       "name": "Алтарь",
       "summary": "Алтарь для жертвоприношений в лесу. Окружён колдовскими атрибутами. На нём ещё остались следы крови…",
-      "image": null,
+      "image": {
+        "src": "assets/locations/room-altar.webp",
+        "alt": "Алтарь"
+      },
       "initialLevel": 1,
       "initialVisible": false,
       "layers": [
@@ -2628,7 +2672,10 @@ export const gameContent = {
       "id": "room-prison",
       "name": "Тюрьма",
       "summary": "В подвале располагается тюрьма для заключённых в одной из закрытых дверей. Может пригодиться…",
-      "image": null,
+      "image": {
+        "src": "assets/locations/room-prison.webp",
+        "alt": "Тюрьма"
+      },
       "initialLevel": 1,
       "initialVisible": false,
       "layers": [
@@ -2642,7 +2689,10 @@ export const gameContent = {
       "id": "room-attic",
       "name": "Чердак",
       "summary": "Возможно, приходить сюда было ошибкой…",
-      "image": null,
+      "image": {
+        "src": "assets/locations/room-attic.webp",
+        "alt": "Чердак"
+      },
       "initialLevel": 1,
       "initialVisible": false,
       "layers": [
