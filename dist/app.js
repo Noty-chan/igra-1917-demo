@@ -1,13 +1,15 @@
-import {networkLogin,createNetworkSession} from './core/network-session.js?v=18';
+import {networkLogin,createNetworkSession} from './core/network-session.js?v=19';
 const network=window.IGRA_NETWORK===true;
 let initial=network?await networkLogin():null;
-let game=network?initial.content:(await import('./content/game.js?v=18')).gameContent;
-import { disciplineReference } from './content/disciplines.js?v=18';
-import { archetypeReference } from './content/archetypes.js?v=18';
-import { ownedCharacter } from './core/state.js?v=18';
-import { createLocalSession } from './core/local-session.js?v=18';
-import { healthLevels, damagePenalty, throwD10, visibleJournal } from './core/dice.js?v=18';
-import { applyAtmosphere, decorateTitles } from './core/atmosphere.js?v=18';
+const authenticatedActor=initial?.actor;
+let previewCharacter='';
+let game=network?initial.content:(await import('./content/game.js?v=19')).gameContent;
+import { disciplineReference } from './content/disciplines.js?v=19';
+import { archetypeReference } from './content/archetypes.js?v=19';
+import { ownedCharacter } from './core/state.js?v=19';
+import { createLocalSession } from './core/local-session.js?v=19';
+import { healthLevels, damagePenalty, throwD10, visibleJournal } from './core/dice.js?v=19';
+import { applyAtmosphere, decorateTitles } from './core/atmosphere.js?v=19';
 import { requireDemoLogin } from './core/access.js';
 
 if(!network)await requireDemoLogin();
@@ -200,7 +202,7 @@ function render() {
   document.querySelector('#identity-button').textContent=playerIdentity.name;
   document.querySelector('#identity-button').hidden=network||role!=='player';
   document.querySelector('#spectator-role').hidden=!state.publicViewerEnabled&&role!=='spectator';
-  document.querySelectorAll('[data-role]').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.role===role));if(network)b.hidden=b.dataset.role!==role;});
+  document.querySelectorAll('[data-role]').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.role===role));if(network)b.hidden=authenticatedActor.role==='gm'?b.dataset.role==='spectator':b.dataset.role!==role;});
   document.querySelectorAll('.main-nav [data-view]').forEach(b=>{
     const v=b.dataset.view;
     b.hidden=v==='sheet'?role==='spectator':v==='npcs'?role!=='gm'&&!allNpcs().some(n=>state.npcs[n.id].visible):false;
@@ -209,6 +211,15 @@ function render() {
   main.innerHTML=({house,roster,sheet,npcs,journal})[view]();
   openPanels.forEach(id=>{const panel=document.getElementById(id);if(panel)panel.open=true;});
   main.classList.toggle('roster-view',view==='roster');
+  if(network&&authenticatedActor.role==='gm'){
+    document.querySelector('#gm-preview-control')?.remove();
+    if(role==='player'){
+      const raw=session.raw(),control=document.createElement('label');control.id='gm-preview-control';control.textContent='Просмотр игрока';
+      const select=document.createElement('select');select.id='preview-player';
+      select.innerHTML='<option value="">Игрок без персонажа</option>'+raw.content.characters.filter(c=>raw.state.characters[c.id].claim?.confirmed).map(c=>`<option value="${c.id}">${esc(raw.state.characters[c.id].claim.ownerName)} · ${esc(c.name)}</option>`).join('');
+      select.value=previewCharacter;control.append(select);document.querySelector('.role-panel').append(control);
+    }
+  }
   if(view==='journal')updateRollPool();
   applyAtmosphere(state,role);
   if(view==='roster'){const grid=main.querySelector('.roster');document.documentElement.style.setProperty('--roster-top',`${Math.ceil(grid.getBoundingClientRect().top+scrollY)}px`);}
@@ -257,7 +268,7 @@ document.addEventListener('click',async e=>{
   const link=e.target.closest('[data-link-view]');if(link){e.preventDefault();return navigate(link.dataset.linkView);}
   const b=e.target.closest('button');if(!b||b.disabled)return;const d=b.dataset;
   if(d.view)return navigate(d.view);
-  if(d.role){if(network)return;captureRollDraft();role=d.role;journalFilter='all';rollDraft.willpower=false;if(role==='spectator')view='house';dialog.close();render();return;}
+  if(d.role){if(network){if(authenticatedActor.role!=='gm')return;captureRollDraft();dialog.close();if(d.role==='player'){const raw=session.raw();previewCharacter=raw.state.characters[selectedSheetCharacter]?.claim?.confirmed?selectedSheetCharacter:previewCharacter;session.setPreview(previewCharacter);}else{session.setPreview(null);}return;}captureRollDraft();role=d.role;journalFilter='all';rollDraft.willpower=false;if(role==='spectator')view='house';dialog.close();render();return;}
   if(d.character){if(role==='gm'||role==='player'&&owner()===d.character){selectedSheetCharacter=d.character;return navigate('sheet');}return show('character',d.character);}
   if(d.archetype)return show('archetype',d.archetype);
   if(d.discipline){opened={kind:'discipline',id:d.discipline,value:Number(d.rating)};renderDialog();dialog.showModal();return;}
@@ -318,6 +329,7 @@ document.addEventListener('submit',async e=>{
 });
 document.addEventListener('change',e=>{
   const el=e.target;
+  if(el.id==='preview-player'){previewCharacter=el.value;dialog.close();session.setPreview(previewCharacter);return;}
   if(el.id==='day-select')return act({type:'set-day',id:el.value});
   if(el.dataset.level)return act({type:`set-${el.dataset.level}-level`,id:el.dataset.id,level:Number(el.value)});
   if(el.dataset.blood)return act({type:'set-blood-pool',id:el.dataset.blood,value:Number(el.value)});
@@ -350,7 +362,7 @@ if(network){
   const value=active?.value,start=active?.selectionStart,end=active?.selectionEnd;
   const drafts=Array.from(document.querySelectorAll('#event-form input,#event-form textarea,#event-form select,#npc-form input,#npc-form textarea,form[data-room-description] textarea'),el=>({form:el.closest('form').id,room:el.closest('form').dataset.roomDescription,name:el.name,value:el.value,checked:el.checked,files:el.type==='file'?el.files:null}));
   const roomEditorOpen=document.querySelector('.room-editor')?.open;
-  initial=snapshot;game=snapshot.content;state=snapshot.state;role=snapshot.actor.role;render();if(opened)renderDialog();
+  initial=snapshot;game=snapshot.content;state=snapshot.state;role=snapshot.actor.role;playerIdentity={id:snapshot.actor.id,name:snapshot.actor.name};render();if(opened)renderDialog();
   if(roomEditorOpen&&document.querySelector('.room-editor'))document.querySelector('.room-editor').open=true;
   for(const d of drafts){const f=d.room?document.querySelector(`form[data-room-description="${d.room}"]`):document.getElementById(d.form);const el=f?.elements.namedItem(d.name);if(el){if(el.type==='file'){if(d.files?.length)el.files=d.files;}else el.value=d.value;if(el.type==='checkbox')el.checked=d.checked;}}
   const f=roomId?document.querySelector(`form[data-room-description="${roomId}"]`):document.getElementById(formId);

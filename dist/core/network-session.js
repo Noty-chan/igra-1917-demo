@@ -1,3 +1,4 @@
+import {sessionView} from './session-view.js?v=19';
 export async function networkLogin(){
   const form=document.querySelector('#login-form'),error=document.querySelector('#login-error');
   document.querySelector('label[for="login-username"]').textContent='Ваше имя';
@@ -15,9 +16,10 @@ export async function networkLogin(){
   }));
 }
 export function createNetworkSession(initial){
-  let current=initial,listener=()=>{},socket,timer,stopped=false;
+  let current=initial,listener=()=>{},socket,timer,stopped=false,preview=null;
   const status=document.createElement('span');status.className='connection-status';status.textContent='Подключение…';document.querySelector('.role-panel').append(status);
-  function accept(snapshot){if(snapshot.revision<=current.revision)return;current=snapshot;listener(snapshot);}
+  const projected=()=>preview?{...sessionView(current.content,current.state,preview),revision:current.revision,preview:true}:current;
+  function accept(snapshot){if(snapshot.revision<=current.revision)return;current=snapshot;listener(projected());}
   function connect(){
     socket=new WebSocket(`${location.protocol==='https:'?'wss:':'ws:'}//${location.host}/ws`);
     socket.onopen=()=>{status.textContent='В сети';};
@@ -26,7 +28,8 @@ export function createNetworkSession(initial){
     socket.onclose=()=>{status.textContent='Переподключение…';if(!stopped)timer=setTimeout(connect,2000);};
   }
   connect();
-  return {read:()=>structuredClone(current.state),isPersistent:()=>true,subscribe(fn){listener=fn;},async dispatch(action){
+  return {read:()=>structuredClone(projected().state),raw:()=>structuredClone(current),setPreview(characterId){if(current.actor.role!=='gm')throw Error('Просмотр доступен ведущему.');const claim=current.state.characters[characterId]?.claim;preview=characterId===null?null:{id:claim?.confirmed?claim.ownerId:'gm-preview-unassigned',name:claim?.confirmed?claim.ownerName:'Игрок без персонажа',role:'player'};listener(projected());},isPersistent:()=>true,subscribe(fn){listener=fn;},async dispatch(action){
+    if(preview)throw Error('Это просмотр глазами игрока. Вернитесь в режим ведущего для изменений.');
     if(socket?.readyState!==WebSocket.OPEN)throw Error('Нет связи с сервером. Дождитесь переподключения.');
     const res=await fetch('/api/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(action)});
     const data=await res.json();if(!res.ok)throw Error(data.error||'Действие не выполнено.');accept(data);return structuredClone(data.state);
