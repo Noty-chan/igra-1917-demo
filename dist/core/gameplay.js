@@ -1,4 +1,4 @@
-import { evaluateRoll, damagePenalty } from './dice.js?v=15';
+import { evaluateRoll, damagePenalty } from './dice.js?v=16';
 
 export function hydrateGameplay(content, saved) {
   const example = {id:'event-clean-night',title:content.cleanNight.title,text:content.cleanNight.text,dayId:'day-04',visible:saved.cleanNightVisible===true};
