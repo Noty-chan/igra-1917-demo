@@ -1,22 +1,26 @@
-import { gameContent as game } from './content/game.js?v=16';
-import { disciplineReference } from './content/disciplines.js?v=16';
-import { archetypeReference } from './content/archetypes.js?v=16';
-import { ownedCharacter } from './core/state.js?v=16';
-import { createLocalSession } from './core/local-session.js?v=16';
-import { healthLevels, damagePenalty, throwD10, visibleJournal } from './core/dice.js?v=16';
-import { applyAtmosphere, decorateTitles } from './core/atmosphere.js?v=16';
+import {networkLogin,createNetworkSession} from './core/network-session.js?v=18';
+const network=window.IGRA_NETWORK===true;
+let initial=network?await networkLogin():null;
+let game=network?initial.content:(await import('./content/game.js?v=18')).gameContent;
+import { disciplineReference } from './content/disciplines.js?v=18';
+import { archetypeReference } from './content/archetypes.js?v=18';
+import { ownedCharacter } from './core/state.js?v=18';
+import { createLocalSession } from './core/local-session.js?v=18';
+import { healthLevels, damagePenalty, throwD10, visibleJournal } from './core/dice.js?v=18';
+import { applyAtmosphere, decorateTitles } from './core/atmosphere.js?v=18';
 import { requireDemoLogin } from './core/access.js';
 
-await requireDemoLogin();
+if(!network)await requireDemoLogin();
 let storage;
 try { storage = window.localStorage; } catch { storage = null; }
-const session = createLocalSession(game, storage, 'igra-workbench-v2');
+const session = network?createNetworkSession(initial):createLocalSession(game, storage, 'igra-workbench-v2');
 let playerIdentity = {id:'preview-player',name:'Игрок 1'};
 try {
   const saved = JSON.parse(storage?.getItem('igra-preview-identity-v1') || 'null');
   if(typeof saved?.id==='string' && typeof saved?.name==='string') playerIdentity=saved;
 } catch {}
-let state=session.read(), role='player', opened=null, selectedSheetCharacter=null;
+if(network)playerIdentity={id:initial.actor.id,name:initial.actor.name};
+let state=session.read(), role=network?initial.actor.role:'player', opened=null, selectedSheetCharacter=null;
 const views=['house','roster','sheet','npcs','journal'];
 let view=views.includes(location.hash.slice(1))?location.hash.slice(1):'house';
 let editingNpc=null;
@@ -26,7 +30,7 @@ let rollDraft={pool:5,difficulty:6,modifier:0,attribute:'',ability:'',characterI
 const main=document.querySelector('#content'), dialog=document.querySelector('#detail');
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const prose=v=>String(v??'').split(/\n\s*\n/).filter(Boolean).map(p=>`<p>${esc(p).replace(/\n/g,'<br>')}</p>`).join('');
-const actor=()=>role==='gm'?{id:'preview-gm',role,name:'Ведущий'}:{...playerIdentity,role};
+const actor=()=>network?initial.actor:role==='gm'?{id:'preview-gm',role,name:'Ведущий'}:{...playerIdentity,role};
 const day=()=>game.days.find(d=>d.id===state.dayId);
 const owner=()=>ownedCharacter(state,playerIdentity.id);
 const sheetCharacter=()=>role==='gm'?(selectedSheetCharacter||owner()):owner();
@@ -62,8 +66,8 @@ function navigate(next,hash=true) {
   view=next;dialog.close();if(hash)history.replaceState(null,'',`#${next}`);render();
   window.scrollTo({top:0,behavior:'instant'});
 }
-function act(action,message='') {
-  try {state=session.dispatch(action,actor());render();if(opened)renderDialog();if(message)toast(message);return true;}
+async function act(action,message='') {
+  try {state=await session.dispatch(action,actor());if(!network){render();if(opened)renderDialog();}if(message)toast(message);return true;}
   catch(error){toast(error.message||'Действие не выполнено.');return false;}
 }
 function levelControl(kind,item,current) {
@@ -93,7 +97,7 @@ function archetypeLinks(c) {
 }
 function objectivePanel(c,s) {
   const mainGoal=s.goals.mainVisible,traitor=s.goals.traitorVisible,isGM=role==='gm';
-  return `<section class="sheet-section goals-block"><h2>Цели</h2>${isGM||mainGoal?`<details class="objective-card" ${isGM?'':'open'}><summary>Две основные цели${isGM?` · ${mainGoal?'открыты':'скрыты'}`:''}</summary><p><strong>Личная:</strong> ${esc(c.goals.main.personal)}</p><p><strong>Игровая:</strong> ${esc(c.goals.main.game)}</p>${isGM?`<button data-goal="main" data-id="${c.id}" data-visible="${!mainGoal}">${mainGoal?'Скрыть от игрока':'Открыть игроку'}</button>`:''}</details>`:'<p class="closed-message">Основные цели ещё не открыты.</p>'}${isGM||traitor?`<details class="objective-card" ${isGM?'':'open'}><summary>Цель предателя${isGM?` · ${traitor?'открыта':'скрыта'}`:''}</summary>${prose(c.goals.traitor)}${isGM?`<button data-goal="traitor" data-id="${c.id}" data-visible="${!traitor}">${traitor?'Скрыть от игрока':'Открыть игроку'}</button>`:''}</details>`:'<p class="closed-message">Отдельная цель ещё не открыта.</p>'}</section>`;
+  return `<section class="sheet-section goals-block"><h2>Цели</h2>${isGM||mainGoal?`<details id="goals-main-${c.id}" class="objective-card" ${isGM?'':'open'}><summary>Две основные цели${isGM?` · ${mainGoal?'открыты':'скрыты'}`:''}</summary><p><strong>Личная:</strong> ${esc(c.goals.main.personal)}</p><p><strong>Игровая:</strong> ${esc(c.goals.main.game)}</p>${isGM?`<button data-goal="main" data-id="${c.id}" data-visible="${!mainGoal}">${mainGoal?'Скрыть от игрока':'Открыть игроку'}</button>`:''}</details>`:'<p class="closed-message">Основные цели ещё не открыты.</p>'}${isGM||traitor?`<details id="goals-traitor-${c.id}" class="objective-card" ${isGM?'':'open'}><summary>Цель предателя${isGM?` · ${traitor?'открыта':'скрыта'}`:''}</summary>${prose(c.goals.traitor)}${isGM?`<button data-goal="traitor" data-id="${c.id}" data-visible="${!traitor}">${traitor?'Скрыть от игрока':'Открыть игроку'}</button>`:''}</details>`:'<p class="closed-message">Отдельная цель ещё не открыта.</p>'}</section>`;
 }
 function bloodPanel(c,s) {
   if(role!=='gm'&&!s.bloodVisible)return '<section class="resource-card"><h3>Запас крови</h3><p>Пока скрыт ведущим.</p></section>';
@@ -138,7 +142,7 @@ function sheet() {
 }
 function npcEditor() {
   const n=allNpcs().find(n=>n.id===editingNpc);
-  return `<details id="npc-editor" class="panel"><summary>${n?'Изменить действующее лицо':'Добавить действующее лицо'}</summary><form id="npc-form"><label>Имя<input name="name" maxlength="120" required value="${esc(n?.name)}"></label><label>Роль<input name="role" maxlength="120" value="${esc(n?.role)}" placeholder="Например, гость особняка"></label><label>Описание<textarea name="summary" rows="5" maxlength="10000">${esc(n?.summary)}</textarea></label><label>Портрет<input name="portrait" type="file" accept="image/png,image/jpeg,image/webp"></label>${n?.portrait?'<label class="checkbox-label"><input type="checkbox" name="removePortrait">Убрать портрет</label>':''}<p>Персонаж появится скрытым. Нажмите «Представить игрокам», когда будет нужно.</p><small>Сохранение в этом браузере. Изображение будет уменьшено для хранения.</small><button type="submit" class="gold-button">Сохранить</button>${n?'<button type="button" id="cancel-npc">Отмена</button>':''}</form></details>`;
+  return `<details id="npc-editor" class="panel"><summary>${n?'Изменить действующее лицо':'Добавить действующее лицо'}</summary><form id="npc-form"><label>Имя<input name="name" maxlength="120" required value="${esc(n?.name)}"></label><label>Роль<input name="role" maxlength="120" value="${esc(n?.role)}" placeholder="Например, гость особняка"></label><label>Описание<textarea name="summary" rows="5" maxlength="10000">${esc(n?.summary)}</textarea></label><label>Портрет<input name="portrait" type="file" accept="image/png,image/jpeg,image/webp"></label>${n?.portrait?'<label class="checkbox-label"><input type="checkbox" name="removePortrait">Убрать портрет</label>':''}<p>Персонаж появится скрытым. Нажмите «Представить игрокам», когда будет нужно.</p><small>${network?'Сохранение на сервере.':'Сохранение в этом браузере.'} Изображение будет уменьшено для хранения.</small><button type="submit" class="gold-button">Сохранить</button>${n?'<button type="button" id="cancel-npc">Отмена</button>':''}</form></details>`;
 }
 async function uploadedPortrait(file) {
   if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>15*1024*1024)throw new Error('Нужен JPEG, PNG или WebP размером до 15 МБ.');
@@ -184,7 +188,7 @@ function journal() {
   return title('Журнал бросков')+`<div class="journal-layout">${rollComposer()}<section class="journal-feed"><label class="feed-filter">Показать<select id="journal-filter"><option value="all" ${journalFilter==='all'?'selected':''}>${role==='gm'?'Все записи':'Все открытые'}</option>${role==='player'?`<option value="mine" ${journalFilter==='mine'?'selected':''}>Мои записи</option>`:''}${role==='gm'?`<option value="public" ${journalFilter==='public'?'selected':''}>Открытые</option><option value="hidden" ${journalFilter==='hidden'?'selected':''}>За ширмой</option>`:''}</select></label>${messages.length?messages.map(r=>`<article class="journal-entry ${r.hidden?'hidden-roll':''}"><header><strong>${esc(r.authorName)}${r.characterName?` · ${esc(r.characterName)}`:''}</strong><time datetime="${esc(r.createdAt)}">${esc(timeLabel(r.createdAt))}</time></header>${r.hidden?'<span class="eyebrow">За ширмой</span>':''}${r.type==='roll'?`<h3>${esc(r.label)}</h3><div class="dice">${r.dice.map(n=>`<span class="${n===1?'die-one':n>=r.difficulty?'die-success':''}">${n}</span>`).join('')}${r.result.automatic?'<span class="automatic-die">+1 ВОЛЯ</span>':''}</div><p class="roll-outcome ${r.result.outcome}">${esc(outcomeText(r.result))}<small>Сложность ${r.difficulty} · успехов ${r.result.raw}, единиц ${r.result.ones}</small></p>`:''}${prose(r.note)}${role==='gm'||role==='player'&&r.authorId===playerIdentity.id?`<button class="text-button danger-button" data-delete-journal="${r.id}">Удалить запись</button>`:''}${r.comments.map(c=>`<div class="roll-comment"><strong>${esc(c.authorName)}</strong>${prose(c.text)}</div>`).join('')}${role==='gm'?`<button class="text-button" data-comment="${r.id}">Комментарий ведущего</button>${commentFor===r.id?`<form class="comment-form" data-comment-form="${r.id}"><textarea name="comment" rows="2" maxlength="2000" required aria-label="Комментарий ведущего"></textarea><button type="submit">Добавить</button></form>`:''}`:''}</article>`).join(''):'<p class="empty-state">Пока нет записей.</p>'}${rows.length>journalCount?'<button id="more-journal">Показать ещё</button>':''}</section></div>`;
 }
 function render() {
-  if(role==='spectator'&&!state.publicViewerEnabled){role='player';view='house';toast('Ведущий закрыл зрительский режим.');}
+  if(role==='spectator'&&!state.publicViewerEnabled){if(network){location.reload();return;}role='player';view='house';toast('Ведущий закрыл зрительский режим.');}
   if(role==='spectator'&&view==='sheet')view='house';
   const openPanels=Array.from(main.querySelectorAll('details[id][open]'),d=>d.id);
   document.querySelector('#day-title').textContent=day().title;
@@ -194,9 +198,9 @@ function render() {
   select.hidden=role!=='gm';select.innerHTML=game.days.map(d=>`<option value="${d.id}" ${d.id===state.dayId?'selected':''}>${esc(d.title)}</option>`).join('');
   document.querySelector('#day-title').hidden=role==='gm';
   document.querySelector('#identity-button').textContent=playerIdentity.name;
-  document.querySelector('#identity-button').hidden=role!=='player';
+  document.querySelector('#identity-button').hidden=network||role!=='player';
   document.querySelector('#spectator-role').hidden=!state.publicViewerEnabled&&role!=='spectator';
-  document.querySelectorAll('[data-role]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.role===role)));
+  document.querySelectorAll('[data-role]').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.role===role));if(network)b.hidden=b.dataset.role!==role;});
   document.querySelectorAll('.main-nav [data-view]').forEach(b=>{
     const v=b.dataset.view;
     b.hidden=v==='sheet'?role==='spectator':v==='npcs'?role!=='gm'&&!allNpcs().some(n=>state.npcs[n.id].visible):false;
@@ -244,22 +248,22 @@ function currentPool() {
   return Math.max(0,(c.attributes.find(a=>a.key===rollDraft.attribute)?.value||0)+(c.abilities.find(a=>a.key===rollDraft.ability)?.value||0)+rollDraft.modifier-penalty);
 }
 function updateRollPool(){captureRollDraft();const out=document.querySelector('#pool-count');if(out)out.textContent=currentPool();}
-function submitRoll() {
+async function submitRoll() {
   captureRollDraft();const c=rollCharacter();
   const action={type:'record-roll',id:uuid('roll'),createdAt:timestamp(),characterId:c?.id,attribute:rollDraft.attribute,ability:rollDraft.ability,modifier:rollDraft.modifier,pool:currentPool(),difficulty:rollDraft.difficulty,willpower:rollDraft.willpower,hidden:role==='gm'&&rollDraft.hidden,note:rollDraft.note,label:rollDraft.label,dice:throwD10(currentPool())};
-  if(act(action,'Бросок записан в журнал.')){rollDraft.willpower=false;rollDraft.note='';render();}
+  if(await act(action,'Бросок записан в журнал.')){rollDraft.willpower=false;rollDraft.note='';render();}
 }
-document.addEventListener('click',e=>{
+document.addEventListener('click',async e=>{
   const link=e.target.closest('[data-link-view]');if(link){e.preventDefault();return navigate(link.dataset.linkView);}
   const b=e.target.closest('button');if(!b||b.disabled)return;const d=b.dataset;
   if(d.view)return navigate(d.view);
-  if(d.role){captureRollDraft();role=d.role;journalFilter='all';rollDraft.willpower=false;if(role==='spectator')view='house';dialog.close();render();return;}
+  if(d.role){if(network)return;captureRollDraft();role=d.role;journalFilter='all';rollDraft.willpower=false;if(role==='spectator')view='house';dialog.close();render();return;}
   if(d.character){if(role==='gm'||role==='player'&&owner()===d.character){selectedSheetCharacter=d.character;return navigate('sheet');}return show('character',d.character);}
   if(d.archetype)return show('archetype',d.archetype);
   if(d.discipline){opened={kind:'discipline',id:d.discipline,value:Number(d.rating)};renderDialog();dialog.showModal();return;}
   if(d.room)return show('room',d.room);
   if(d.reserve)return act({type:'reserve-character',id:d.reserve},'Подтвердите выбранного персонажа.');
-  if(d.confirm){if(act({type:'confirm-character',id:d.confirm},'Персонаж закреплён.'))navigate('sheet');return;}
+  if(d.confirm){if(await act({type:'confirm-character',id:d.confirm},'Персонаж закреплён.'))navigate('sheet');return;}
   if(d.release)return act({type:'release-character',id:d.release});
   if(d.death)return act({type:'set-death',id:d.death,dead:!state.characters[d.death].death});
   if(d.roomVisible)return act({type:'set-room-visible',id:d.roomVisible,visible:!state.rooms[d.roomVisible].visible});
@@ -283,7 +287,7 @@ document.addEventListener('click',e=>{
   if(b.id==='identity-button')return show('identity');
   if(b.id==='cancel-event'){editingEvent=null;render();return;}
   if(b.id==='more-journal'){journalCount+=50;render();return;}
-  if(b.id==='post-message'){captureRollDraft();if(act({type:'post-message',id:uuid('message'),createdAt:timestamp(),note:rollDraft.note,hidden:role==='gm'&&rollDraft.hidden})){rollDraft.note='';render();}return;}
+  if(b.id==='post-message'){captureRollDraft();if(await act({type:'post-message',id:uuid('message'),createdAt:timestamp(),note:rollDraft.note,hidden:role==='gm'&&rollDraft.hidden})){rollDraft.note='';render();}return;}
   if(b.classList.contains('close'))dialog.close();
 });
 document.addEventListener('submit',async e=>{
@@ -294,7 +298,7 @@ document.addEventListener('submit',async e=>{
     try{
       const file=f.get('portrait'),src=file?.size?await uploadedPortrait(file):f.has('removePortrait')?'':existing?.portrait?.src||'';
       if(role!=='gm')return;
-      if(act({type:'save-custom-npc',item:{id:npcId,name:String(f.get('name')),role:String(f.get('role')),summary:String(f.get('summary')),portrait:{src}}},'Персонаж сохранён.')){editingNpc=null;render();}
+      if(await act({type:'save-custom-npc',item:{id:npcId,name:String(f.get('name')),role:String(f.get('role')),summary:String(f.get('summary')),portrait:{src}}},'Персонаж сохранён.')){editingNpc=null;render();}
     }catch(error){toast(error.message||'Не удалось загрузить изображение.');}finally{button.disabled=false;}return;
   }
   if(e.target.id==='journal-form'){e.preventDefault();return submitRoll();}
@@ -306,10 +310,10 @@ document.addEventListener('submit',async e=>{
   }
   if(e.target.id==='event-form'){
     e.preventDefault();const f=new FormData(e.target);
-    if(act({type:'save-event',id:editingEvent||uuid('event'),title:String(f.get('title')),text:String(f.get('text')),dayId:f.get('dayId')||null,visible:f.has('visible')},'Объявление сохранено.')){editingEvent=null;render();}return;
+    if(await act({type:'save-event',id:editingEvent||uuid('event'),title:String(f.get('title')),text:String(f.get('text')),dayId:f.get('dayId')||null,visible:f.has('visible')},'Объявление сохранено.')){editingEvent=null;render();}return;
   }
   if(e.target.dataset.commentForm){
-    e.preventDefault();captureRollDraft();if(act({type:'comment-roll',id:e.target.dataset.commentForm,text:String(new FormData(e.target).get('comment')),createdAt:timestamp()})){commentFor=null;render();}
+    e.preventDefault();captureRollDraft();if(await act({type:'comment-roll',id:e.target.dataset.commentForm,text:String(new FormData(e.target).get('comment')),createdAt:timestamp()})){commentFor=null;render();}
   }
 });
 document.addEventListener('change',e=>{
@@ -321,17 +325,36 @@ document.addEventListener('change',e=>{
   if(el.id==='journal-filter'){captureRollDraft();journalFilter=el.value;render();return;}
   if(el.closest('#journal-form')){captureRollDraft();if(el.name==='characterId')render();else updateRollPool();}
 });
-document.addEventListener('input',e=>{
+document.addEventListener('input',async e=>{
   if(e.target.closest('#journal-form'))updateRollPool();
   if(e.target.id!=='notes'||role!=='player')return;
-  try{state=session.dispatch({type:'save-note',id:owner(),text:e.target.value},actor());document.querySelector('#notes-status').textContent='Сохранено';}catch(error){toast(error.message);}
+  try{state=await session.dispatch({type:'save-note',id:owner(),text:e.target.value},actor());document.querySelector('#notes-status').textContent='Сохранено';}catch(error){toast(error.message);}
 });
 dialog.addEventListener('close',()=>{opened=null;});
 dialog.addEventListener('click',e=>{const r=dialog.getBoundingClientRect();if(e.target===dialog&&(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom))dialog.close();});
-window.addEventListener('storage',e=>{if(e.key==='igra-workbench-v2'&&session.refresh(e.newValue)){state=session.read();render();if(opened)renderDialog();}});
+window.addEventListener('storage',e=>{if(!network&&e.key==='igra-workbench-v2'&&session.refresh(e.newValue)){state=session.read();render();if(opened)renderDialog();}});
 function fitRoster(){if(view==='roster'){const grid=main.querySelector('.roster');if(grid)document.documentElement.style.setProperty('--roster-top',`${Math.ceil(grid.getBoundingClientRect().top+scrollY)}px`);}}
 window.addEventListener('resize',fitRoster);
 document.fonts?.ready.then(fitRoster);
 if(typeof ResizeObserver!=='undefined'){const layoutObserver=new ResizeObserver(fitRoster);layoutObserver.observe(document.querySelector('.masthead'));layoutObserver.observe(document.querySelector('.main-nav'));}
 window.addEventListener('hashchange',()=>navigate(views.includes(location.hash.slice(1))?location.hash.slice(1):'house',false));
 render();
+
+if(network){
+ const name=document.createElement('span');name.className='online-name';name.textContent=initial.actor.name;document.querySelector('.role-panel').prepend(name);
+ const leave=document.createElement('button');leave.className='text-button';leave.textContent='Выйти';leave.onclick=()=>session.logout();document.querySelector('.role-panel').append(leave);
+ session.subscribe(snapshot=>{
+  captureRollDraft();
+  const active=document.activeElement, focusId=active?.id, focusName=active?.name;
+  const formId=active?.closest('form')?.id, roomId=active?.closest('form')?.dataset.roomDescription;
+  const value=active?.value,start=active?.selectionStart,end=active?.selectionEnd;
+  const drafts=Array.from(document.querySelectorAll('#event-form input,#event-form textarea,#event-form select,#npc-form input,#npc-form textarea,form[data-room-description] textarea'),el=>({form:el.closest('form').id,room:el.closest('form').dataset.roomDescription,name:el.name,value:el.value,checked:el.checked,files:el.type==='file'?el.files:null}));
+  const roomEditorOpen=document.querySelector('.room-editor')?.open;
+  initial=snapshot;game=snapshot.content;state=snapshot.state;role=snapshot.actor.role;render();if(opened)renderDialog();
+  if(roomEditorOpen&&document.querySelector('.room-editor'))document.querySelector('.room-editor').open=true;
+  for(const d of drafts){const f=d.room?document.querySelector(`form[data-room-description="${d.room}"]`):document.getElementById(d.form);const el=f?.elements.namedItem(d.name);if(el){if(el.type==='file'){if(d.files?.length)el.files=d.files;}else el.value=d.value;if(el.type==='checkbox')el.checked=d.checked;}}
+  const f=roomId?document.querySelector(`form[data-room-description="${roomId}"]`):document.getElementById(formId);
+  const replacement=focusId?document.getElementById(focusId):f?.elements.namedItem(focusName);
+  if(replacement&&active?.matches('input:not([type=file]),textarea,select')){if(focusId==='notes')replacement.value=value;replacement.focus({preventScroll:true});if(start!==null&&start!==undefined&&replacement.setSelectionRange&&replacement.type!=='number'&&replacement.tagName!=='SELECT'){try{replacement.setSelectionRange(start,end);}catch{}}}
+ });
+}

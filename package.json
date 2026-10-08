@@ -2,5 +2,15 @@
   "name": "igra-workbench",
   "private": true,
   "type": "module",
-  "scripts": { "test": "node --test tests/state.test.js tests/gameplay.test.js" }
+  "scripts": {
+    "test": "node --test tests/state.test.js tests/gameplay.test.js",
+    "start": "node server/index.js",
+    "test:network": "node --test tests/network.test.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.3"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  }
 }

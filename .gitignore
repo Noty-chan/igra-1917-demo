@@ -4,3 +4,7 @@
 /output/playwright/
 /ACCESS-CREDENTIALS.local.txt
 /output/client-2026-10-07/
+
+/data/
+/node_modules/
+.env

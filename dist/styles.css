@@ -119,3 +119,5 @@ html[data-masquerade="0"] :is(.frame-corner,.manor-frame:before,.manor-frame:aft
 .masthead{display:grid;grid-template-columns:1fr auto 1fr}.role-panel{justify-self:end}.day-mark{justify-self:center;min-width:240px}.day-mark select{width:100%;text-align:center;min-height:38px}.room-editor{margin-top:22px}.room-editor form{display:grid;gap:16px;margin-top:15px}.masquerade-panel>strong{color:var(--ink)}
 html[data-masquerade="0"] #application{filter:grayscale(1)}
 @media(max-width:760px){.masthead{grid-template-columns:1fr 1fr}.day-mark{min-width:0;width:100%;margin:0}.role-panel{grid-column:1/-1;justify-self:stretch}.manor-frame{width:100%}.roster>.portrait-button:after{background-size:16px 16px}}
+.connection-status,.online-name{font:12px var(--sans);color:var(--muted);max-width:220px;overflow-wrap:anywhere}.online-name{color:var(--ink)}
+@media(max-width:760px){.role-panel:has(.connection-status){flex-wrap:wrap;gap:10px}.online-name{max-width:150px}.login-card select{width:100%}}

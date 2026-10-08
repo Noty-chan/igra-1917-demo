@@ -23,8 +23,13 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts
       - name: Verify session logic
-        run: npm test
+        run: npm test && npm run test:network
       - name: Configure Pages
         uses: actions/configure-pages@v6.0.0
       - name: Upload static site
