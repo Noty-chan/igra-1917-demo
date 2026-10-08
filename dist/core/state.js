@@ -1,5 +1,5 @@
 /** Pure session transitions. The local preview is not an authorization boundary. */
-import { hydrateGameplay, applyGameplay } from './gameplay.js?v=13';
+import { hydrateGameplay, applyGameplay } from './gameplay.js?v=15';
 export function validateContent(content) {
   for (const collection of ['days', 'characters', 'rooms', 'npcs']) {
     if (!Array.isArray(content[collection])) throw new Error(`Не задан раздел ${collection}.`);
@@ -60,7 +60,7 @@ export function hydrateState(content, saved = {}) {
     };
   }
   for (const room of content.rooms) {
-    result.rooms[room.id] = { level: level(saved.rooms?.[room.id]?.level ?? room.initialLevel ?? 0, room.layers.length), visible:typeof saved.rooms?.[room.id]?.visible==='boolean'?saved.rooms[room.id].visible:room.initialVisible!==false };
+    result.rooms[room.id] = { description:typeof saved.rooms?.[room.id]?.description==='string'?saved.rooms[room.id].description.slice(0,20000):null, level: level(saved.rooms?.[room.id]?.level ?? room.initialLevel ?? 0, room.layers.length), visible:typeof saved.rooms?.[room.id]?.visible==='boolean'?saved.rooms[room.id].visible:room.initialVisible!==false };
   }
   for (const npc of [...content.npcs,...result.customNpcs]) {
     result.npcs[npc.id] = { visible: saved.npcs?.[npc.id]?.visible === true, level: level(saved.npcs?.[npc.id]?.level, npc.layers.length) };
@@ -97,6 +97,9 @@ export function transition(content, previous, action, actor) {
     case 'delete-custom-npc': {
       gm();if(!state.customNpcs.some(n=>n.id===action.id))throw new Error('Можно удалить только добавленного персонажа.');
       state.customNpcs=state.customNpcs.filter(n=>n.id!==action.id);delete state.npcs[action.id];break;
+    }
+    case 'save-room-description': {
+      gm();const [,entry]=entity('rooms',action.id);if(typeof action.text!=='string'||action.text.length>20000)throw new Error('Описание должно быть не длиннее 20 000 символов.');entry.description=action.text.trim();break;
     }
     case 'set-room-visible': {
       gm();const [,entry]=entity('rooms',action.id);entry.visible=action.visible===true;

@@ -73,3 +73,12 @@ test('duplicate permanent identifiers are rejected before rendering', () => {
   changed.characters[1].id = changed.characters[0].id;
   assert.throws(() => validateContent(changed));
 });
+
+test('only GM edits room descriptions and edits survive hydration',()=>{
+ const roomId='room-vestibule',original=hydrateState(gameContent);
+ assert.throws(()=>transition(gameContent,original,{type:'save-room-description',id:roomId,text:'secret passage'},alice));
+ const updated=transition(gameContent,original,{type:'save-room-description',id:roomId,text:'New passage'},gm);
+ assert.equal(hydrateState(gameContent,updated).rooms[roomId].description,'New passage');
+ assert.equal(updated.rooms[roomId].visible,original.rooms[roomId].visible);
+ assert.throws(()=>transition(gameContent,updated,{type:'save-room-description',id:roomId,text:'x'.repeat(20001)},gm));
+});

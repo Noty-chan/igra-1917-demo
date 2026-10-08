@@ -1,10 +1,10 @@
-import { gameContent as game } from './content/game.js?v=13';
-import { disciplineReference } from './content/disciplines.js?v=13';
-import { archetypeReference } from './content/archetypes.js?v=13';
-import { ownedCharacter } from './core/state.js?v=13';
-import { createLocalSession } from './core/local-session.js?v=13';
-import { healthLevels, damagePenalty, throwD10, visibleJournal } from './core/dice.js?v=13';
-import { applyAtmosphere, decorateTitles } from './core/atmosphere.js?v=13';
+import { gameContent as game } from './content/game.js?v=15';
+import { disciplineReference } from './content/disciplines.js?v=15';
+import { archetypeReference } from './content/archetypes.js?v=15';
+import { ownedCharacter } from './core/state.js?v=15';
+import { createLocalSession } from './core/local-session.js?v=15';
+import { healthLevels, damagePenalty, throwD10, visibleJournal } from './core/dice.js?v=15';
+import { applyAtmosphere, decorateTitles } from './core/atmosphere.js?v=15';
 import { requireDemoLogin } from './core/access.js';
 
 await requireDemoLogin();
@@ -107,6 +107,7 @@ function healthPanel(c,s) {
   const penalty=damagePenalty(s.health),count=s.health.filter(Boolean).length;
   return `<section class="resource-card health-panel"><h3>Повреждения</h3><p>${count?penalty===null?'Обездвижен':`Штраф к пулу: −${penalty}`:'Здоров'}</p><div class="health-levels">${healthLevels.map((l,i)=>`<button class="damage-type type-${s.health[i]}" data-health="${i}" data-id="${c.id}" aria-label="${l.name}: ${labels[s.health[i]]}; сменить тип" title="Нажатие: пусто → ударный → летальный → агравированный"><span>${marks[s.health[i]]}</span><span>${esc(l.name)}</span><small>${l.penalty===null?'—':l.penalty?`−${l.penalty}`:'0'}</small></button>`).join('')}</div><small>/ ударный · × летальный · ✱ агравированный</small></section>`;
 }
+function roomDescription(r){return state.rooms[r.id].description??(r.layers.map(l=>l.text).join('\n\n')||r.summary);}
 function masqueradePanel() {
   if(role!=='gm'&&!state.masquerade.visible)return '';
   return `<section class="masquerade-panel"><div><h2>Маскарад</h2>${role==='gm'?'<p>0–5</p>':''}</div><strong>${state.masquerade.value}</strong>${role==='gm'?`<div class="inline-controls"><button data-masquerade="-2">−2</button><button data-masquerade="-1">−1</button><button data-masquerade="1">+1</button><button data-masquerade="2">+2</button><button data-masquerade-visible="${!state.masquerade.visible}">${state.masquerade.visible?'Скрыть от игроков':'Открыть игрокам'}</button></div>`:''}</section>`;
@@ -118,7 +119,7 @@ function house() {
   const announcements=publishedEvents();
   const rooms=game.rooms.filter(r=>role==='gm'||state.rooms[r.id].visible).map(r=>{
     const s=state.rooms[r.id];
-    return `<article class="room-card ${s.level===0?'locked':''}"><h3>${esc(r.name)}</h3>${r.image?illustration(r.image,'room-preview'):''}${prose(r.summary)}<button data-room="${r.id}">${s.level||role==='gm'?'Осмотреть':'Дверь закрыта'}</button>${role==='gm'?`<button data-room-visible="${r.id}">${s.visible?'Скрыть локацию':'Открыть игрокам'}</button>${levelControl('room',r,s.level)}`:''}</article>`;
+    return `<article class="room-card ${!s.visible?'locked':''}"><h3>${esc(r.name)}</h3>${r.image?illustration(r.image,'room-preview'):''}${prose(roomDescription(r))}<button data-room="${r.id}">Осмотреть</button>${role==='gm'?`<button data-room-visible="${r.id}">${s.visible?'Скрыть локацию':'Открыть игрокам'}</button>`:''}</article>`;
   }).join('');
   return `<section class="hero"><h1>Особняк Вяземских</h1><figure class="manor-frame"><i class="frame-corner top-left" aria-hidden="true"></i><i class="frame-corner top-right" aria-hidden="true"></i><i class="frame-corner bottom-left" aria-hidden="true"></i><i class="frame-corner bottom-right" aria-hidden="true"></i>${illustration(game.house.image)}</figure><div class="house-copy">${prose(game.house.intro.replace(/\n/g,' '))}${prose(game.house.history.replace(/\n/g,' '))}</div></section><section class="locations"><div class="section-heading"><h2>Локации</h2></div><div class="room-grid">${rooms}</div></section>${announcements.length?`<section class="house-announcements" aria-label="Объявления">${eventCards(announcements)}</section>`:''}<details id="house-rules" class="rule-card house-rules"><summary>Правила игры</summary><div class="rules-grid">${game.playerGuide.map(r=>`<article class="rule-card"><h2>${esc(r.title)}</h2>${prose(r.text)}</article>`).join('')}</div></details>${role==='gm'?houseManagement():masqueradePanel()}`;
 }
@@ -224,7 +225,7 @@ function renderDialog() {
     html=`<div class="dossier-layout"><div>${portrait(c)}</div><article><h2 id="detail-title">${esc(c.name)}</h2><p class="person-meta">${esc(publicFacts(c))}</p>${prose(publicDescription(c))}${layers(c,s.level,false)}${s.death?`<p class="death-date">Погиб · ${esc(s.death.label)}</p>`:''}<div class="dialog-actions">${role==='spectator'?'':mine&&s.claim.confirmed?'<button class="gold-button" data-view="sheet">Открыть мой лист</button>':s.death?'<p>Персонаж недоступен для выбора.</p>':s.claim&&!mine?'<p>Персонаж уже выбран.</p>':owner()?'<p>У вас уже есть персонаж.</p>':mine?`<button class="gold-button" data-confirm="${c.id}">Подтвердить выбор</button><button data-release="${c.id}">Отменить выбор</button>`:`<button class="gold-button" data-reserve="${c.id}">Выбрать персонажа</button>`}</div></article></div>`;
   } else if(opened.kind==='room'){
     const r=game.rooms.find(r=>r.id===opened.id),s=state.rooms[r.id];
-    html=`<h2 id="detail-title">${esc(r.name)}</h2>${r.image?illustration(r.image,'location-illustration'):''}${s.level||role==='gm'?layers(r,s.level):`${prose(r.summary)}<p>Сведения пока закрыты.</p>`}${role==='gm'?`<button data-room-visible="${r.id}">${s.visible?'Скрыть локацию':'Открыть игрокам'}</button>${levelControl('room',r,s.level)}`:''}`;
+    html=role!=='gm'&&!s.visible?'<h2 id="detail-title">Локация скрыта</h2>':`<h2 id="detail-title">${esc(r.name)}</h2>${r.image?illustration(r.image,'location-illustration'):''}${prose(roomDescription(r))}${role==='gm'?`<button data-room-visible="${r.id}">${s.visible?'Скрыть локацию':'Открыть игрокам'}</button><details class="room-editor"><summary>Изменить описание</summary><form data-room-description="${r.id}"><label>Описание для игроков<textarea name="description" rows="10" maxlength="20000">${esc(roomDescription(r))}</textarea></label><button type="submit" class="gold-button">Сохранить описание</button></form></details>`:''}`;
   }
   document.querySelector('#detail-content').innerHTML=html;
   decorateTitles(document.querySelector('#detail-content'));
@@ -286,6 +287,7 @@ document.addEventListener('click',e=>{
   if(b.classList.contains('close'))dialog.close();
 });
 document.addEventListener('submit',async e=>{
+  if(e.target.dataset.roomDescription){e.preventDefault();act({type:'save-room-description',id:e.target.dataset.roomDescription,text:String(new FormData(e.target).get('description'))},'Описание сохранено.');return;}
   if(e.target.id==='npc-form'){
     e.preventDefault();if(role!=='gm')return;const form=e.target,f=new FormData(form),button=form.querySelector('[type="submit"]');button.disabled=true;
     const npcId=editingNpc||uuid('custom'),existing=allNpcs().find(n=>n.id===npcId);

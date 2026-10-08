@@ -26,6 +26,7 @@ export function applyAtmosphere(state,role) {
   root.style.setProperty('--fracture-opacity',String([.55,.48,.32,.18,.06,0][level]));
   decorateTitles(document.querySelector('#content'),level);
   decorateTitles(document.querySelector('#detail-content'),level);
+  document.querySelectorAll('.masquerade-panel>strong').forEach(el=>{const value=String(state.masquerade.value);el.setAttribute('aria-label',value);el.textContent=level>0&&level<4?value+['','\u030d\u0337\u0323','\u030d\u0323','\u030d'][level]:value;});
   const night=document.querySelector('#day-title');
   if(night)decorateTitle(night,level);
 }
