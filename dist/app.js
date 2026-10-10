@@ -1,15 +1,16 @@
-import {networkLogin,createNetworkSession} from './core/network-session.js?v=19';
+import {npcWithEdits} from './core/session-view.js?v=20';
+import {networkLogin,createNetworkSession} from './core/network-session.js?v=20';
 const network=window.IGRA_NETWORK===true;
 let initial=network?await networkLogin():null;
 const authenticatedActor=initial?.actor;
 let previewCharacter='';
-let game=network?initial.content:(await import('./content/game.js?v=19')).gameContent;
-import { disciplineReference } from './content/disciplines.js?v=19';
-import { archetypeReference } from './content/archetypes.js?v=19';
-import { ownedCharacter } from './core/state.js?v=19';
-import { createLocalSession } from './core/local-session.js?v=19';
-import { healthLevels, damagePenalty, throwD10, visibleJournal } from './core/dice.js?v=19';
-import { applyAtmosphere, decorateTitles } from './core/atmosphere.js?v=19';
+let game=network?initial.content:(await import('./content/game.js?v=20')).gameContent;
+import { disciplineReference } from './content/disciplines.js?v=20';
+import { archetypeReference } from './content/archetypes.js?v=20';
+import { ownedCharacter } from './core/state.js?v=20';
+import { createLocalSession } from './core/local-session.js?v=20';
+import { healthLevels, damagePenalty, throwD10, visibleJournal } from './core/dice.js?v=20';
+import { applyAtmosphere, decorateTitles } from './core/atmosphere.js?v=20';
 import { requireDemoLogin } from './core/access.js';
 
 if(!network)await requireDemoLogin();
@@ -26,7 +27,7 @@ let state=session.read(), role=network?initial.actor.role:'player', opened=null,
 const views=['house','roster','sheet','npcs','journal'];
 let view=views.includes(location.hash.slice(1))?location.hash.slice(1):'house';
 let editingNpc=null;
-const allNpcs=()=>[...game.npcs,...state.customNpcs];
+const allNpcs=()=>[...game.npcs.map(n=>npcWithEdits(n,state)),...state.customNpcs];
 let editingEvent=null, commentFor=null, journalFilter='all', journalCount=50;
 let rollDraft={pool:5,difficulty:6,modifier:0,attribute:'',ability:'',characterId:'',willpower:false,hidden:false,note:'',label:''};
 const main=document.querySelector('#content'), dialog=document.querySelector('#detail');
@@ -144,7 +145,7 @@ function sheet() {
 }
 function npcEditor() {
   const n=allNpcs().find(n=>n.id===editingNpc);
-  return `<details id="npc-editor" class="panel"><summary>${n?'Изменить действующее лицо':'Добавить действующее лицо'}</summary><form id="npc-form"><label>Имя<input name="name" maxlength="120" required value="${esc(n?.name)}"></label><label>Роль<input name="role" maxlength="120" value="${esc(n?.role)}" placeholder="Например, гость особняка"></label><label>Описание<textarea name="summary" rows="5" maxlength="10000">${esc(n?.summary)}</textarea></label><label>Портрет<input name="portrait" type="file" accept="image/png,image/jpeg,image/webp"></label>${n?.portrait?'<label class="checkbox-label"><input type="checkbox" name="removePortrait">Убрать портрет</label>':''}<p>Персонаж появится скрытым. Нажмите «Представить игрокам», когда будет нужно.</p><small>${network?'Сохранение на сервере.':'Сохранение в этом браузере.'} Изображение будет уменьшено для хранения.</small><button type="submit" class="gold-button">Сохранить</button>${n?'<button type="button" id="cancel-npc">Отмена</button>':''}</form></details>`;
+  return `<details id="npc-editor" class="panel"><summary>${n?'Изменить действующее лицо':'Добавить действующее лицо'}</summary><form id="npc-form"><label>Имя<input name="name" maxlength="120" required value="${esc(n?.name)}"></label><label>Роль<input name="role" maxlength="120" value="${esc(n?.role)}" placeholder="Например, гость особняка"></label><label>Описание для игроков<textarea name="summary" rows="5" maxlength="10000">${esc(n?.summary)}</textarea></label>${n&&!n.custom?`<label>Сведения ведущего<textarea name="privateText" rows="6" maxlength="10000">${esc(n.layers.map(l=>l.text).join('\n\n'))}</textarea></label>`:''}${!n||n.custom?`<label>Портрет<input name="portrait" type="file" accept="image/png,image/jpeg,image/webp"></label>`:''}${n?.custom&&n?.portrait?'<label class="checkbox-label"><input type="checkbox" name="removePortrait">Убрать портрет</label>':''}<p>${n?'Видимость персонажа при сохранении не меняется.':'Персонаж появится скрытым. Нажмите «Представить игрокам», когда будет нужно.'}</p><small>${network?'Сохранение на сервере.':'Сохранение в этом браузере.'} Изображение будет уменьшено для хранения.</small><button type="submit" class="gold-button">Сохранить</button>${n?'<button type="button" id="cancel-npc">Отмена</button>':''}</form></details>`;
 }
 async function uploadedPortrait(file) {
   if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>15*1024*1024)throw new Error('Нужен JPEG, PNG или WebP размером до 15 МБ.');
@@ -157,7 +158,7 @@ async function uploadedPortrait(file) {
 }
 function npcs() {
   const entries=allNpcs().filter(n=>role==='gm'||state.npcs[n.id].visible);
-  return title('Действующие лица')+(role==='gm'?npcEditor():'')+(entries.length?`<div class="npc-grid">${entries.map(n=>{const s=state.npcs[n.id];return `<article class="npc-card"><div>${portrait(n,false)}</div><div><span class="eyebrow">${role==='gm'&&!s.visible?'Скрыт · ':''}${esc(n.role)}</span><h2>${esc(n.name)}</h2>${prose(n.summary)}${layers(n,s.level)}${role==='gm'?`<button data-npc="${n.id}">${s.visible?'Скрыть':'Представить игрокам'}</button>${levelControl('npc',n,s.level)}${n.custom?`<button data-edit-npc="${n.id}">Изменить</button><button data-delete-npc="${n.id}" class="danger-button">Удалить</button>`:''}`:''}</div></article>`;}).join('')}</div>`:'<p class="empty-state">Новые лица ещё не представлены.</p>');
+  return title('Действующие лица')+(role==='gm'?npcEditor():'')+(entries.length?`<div class="npc-grid">${entries.map(n=>{const s=state.npcs[n.id];return `<article class="npc-card"><div>${portrait(n,false)}</div><div><span class="eyebrow">${role==='gm'&&!s.visible?'Скрыт · ':''}${esc(n.role)}</span><h2>${esc(n.name)}</h2>${prose(n.summary)}${layers(n,s.level)}${role==='gm'?`<button data-npc="${n.id}">${s.visible?'Скрыть':'Представить игрокам'}</button>${levelControl('npc',n,s.level)}<button data-edit-npc="${n.id}">Изменить</button>${n.custom?`<button data-delete-npc="${n.id}" class="danger-button">Удалить</button>`:''}`:''}</div></article>`;}).join('')}</div>`:'<p class="empty-state">Новые лица ещё не представлены.</p>');
 }
 function eventEditor() {
   const e=state.events.find(e=>e.id===editingEvent);
@@ -307,6 +308,7 @@ document.addEventListener('submit',async e=>{
     e.preventDefault();if(role!=='gm')return;const form=e.target,f=new FormData(form),button=form.querySelector('[type="submit"]');button.disabled=true;
     const npcId=editingNpc||uuid('custom'),existing=allNpcs().find(n=>n.id===npcId);
     try{
+      if(existing&&!existing.custom){if(await act({type:'save-npc-text',id:npcId,item:{name:String(f.get('name')),role:String(f.get('role')),summary:String(f.get('summary')),privateText:String(f.get('privateText'))}},'Текст сохранён.')){editingNpc=null;render();}return;}
       const file=f.get('portrait'),src=file?.size?await uploadedPortrait(file):f.has('removePortrait')?'':existing?.portrait?.src||'';
       if(role!=='gm')return;
       if(await act({type:'save-custom-npc',item:{id:npcId,name:String(f.get('name')),role:String(f.get('role')),summary:String(f.get('summary')),portrait:{src}}},'Персонаж сохранён.')){editingNpc=null;render();}

@@ -27,6 +27,17 @@ test('network party cycle: permissions, disclosure, broadcasts, dice and SQLite 
   assert.equal((await login('bad','player-test','gm')).status,401);
   const gm=await login('gm','gm-test','gm'),alice=await login('Алиса','player-test','player'),bob=await login('Борис','player-test','player');
   assert.equal(gm.status,200);assert.equal(alice.status,200);
+  assert.equal(gm.data.content.npcs.length,14);
+  assert.equal(alice.data.content.npcs.length,0);
+  const npc='npc-lakey',edit={name:'Лакей после правки',role:'Лакей',summary:'Новое открытое описание',privateText:'SECRET-NPC-EDIT'};
+  assert.equal((await action(alice.cookie,{type:'save-npc-text',id:npc,item:edit})).status,400);
+  assert.equal((await action(gm.cookie,{type:'save-npc-text',id:npc,item:edit})).status,200);
+  await action(gm.cookie,{type:'set-npc-visible',id:npc,visible:true});
+  const npcView=(await request('/api/session',alice.cookie)).data;
+  assert.equal(npcView.content.npcs[0].summary,edit.summary);
+  assert.equal(npcView.content.npcs[0].layers.length,0);
+  assert.equal(JSON.stringify(npcView).includes('SECRET-NPC-EDIT'),false);
+
   assert.equal(alice.data.content.gmGuide.length,0);
   assert.equal(alice.data.content.characters[0].goals.traitor,'');
   assert.equal(alice.data.content.rooms.find(r=>r.id==='room-altar').layers.length,0);
@@ -63,6 +74,8 @@ test('network party cycle: permissions, disclosure, broadcasts, dice and SQLite 
   await stop();await start();
   const restored=(await request('/api/session',alice.cookie)).data;
   assert.equal(restored.state.characters[c.id].bloodPool,4);
+  assert.equal(restored.content.npcs.find(n=>n.id===npc).name,edit.name);
+  assert.equal((await request('/api/session',gm.cookie)).data.state.npcOverrides[npc].privateText,edit.privateText);
   assert.equal(restored.state.characters[c.id].claim.ownerId,alice.data.actor.id);
   assert.equal(restored.state.rooms['room-vestibule'].description,'Новый проход');
   assert.ok(restored.state.journal.some(e=>e.id==='roll-test'));

@@ -1,5 +1,5 @@
 /** Pure session transitions. The local preview is not an authorization boundary. */
-import { hydrateGameplay, applyGameplay } from './gameplay.js?v=19';
+import { hydrateGameplay, applyGameplay } from './gameplay.js?v=20';
 export function validateContent(content) {
   for (const collection of ['days', 'characters', 'rooms', 'npcs']) {
     if (!Array.isArray(content[collection])) throw new Error(`Не задан раздел ${collection}.`);
@@ -27,9 +27,15 @@ export function sanitizeCustomNpc(item) {
   if(typeof src!=='string'||src.length>350000||(src&&!/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(src)))throw new Error('Выберите изображение JPEG, PNG или WebP.');
   return {id:item.id,name:field('name',120,true),role:field('role',120),summary:field('summary',10000),portrait:src?{src,alt:field('name',120,true)}:null,layers:[],custom:true};
 }
+export function sanitizeNpcText(item){
+ const limits={name:120,role:120,summary:10000,privateText:10000},result={};
+ for(const [key,max] of Object.entries(limits)){if(typeof item?.[key]!=='string'||item[key].length>max||(key==='name'&&!item[key].trim()))throw Error('Проверьте имя и текст персонажа.');result[key]=item[key].trim();}
+ return result;
+}
 export function hydrateState(content, saved = {}) {
   const result = {
     version: 4,
+    npcOverrides:Object.fromEntries(content.npcs.flatMap(n=>{try{return saved.npcOverrides?.[n.id]?[[n.id,sanitizeNpcText(saved.npcOverrides[n.id])]]:[];}catch{return [];}})),
     customNpcs: Array.isArray(saved.customNpcs)?saved.customNpcs.flatMap(item=>{try{return [sanitizeCustomNpc(item)];}catch{return [];}}).filter((n,i,a)=>a.findIndex(x=>x.id===n.id)===i).slice(0,40):[],
     ...hydrateGameplay(content,saved),
     dayId: content.days.some(d => d.id === saved.dayId) ? saved.dayId : content.days[0].id,
@@ -89,6 +95,9 @@ export function transition(content, previous, action, actor) {
     entry.level = action.level;
   };
   switch (action.type) {
+    case 'save-npc-text': {
+      gm();if(!content.npcs.some(n=>n.id===action.id))throw Error('Персонаж не найден.');state.npcOverrides[action.id]=sanitizeNpcText(action.item);break;
+    }
     case 'save-custom-npc': {
       gm();const item=sanitizeCustomNpc(action.item),index=state.customNpcs.findIndex(n=>n.id===item.id);
       if(index<0){if(state.customNpcs.length>=40)throw new Error('Можно добавить до 40 действующих лиц.');state.customNpcs.push(item);}else state.customNpcs[index]=item;

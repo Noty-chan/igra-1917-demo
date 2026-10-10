@@ -52,7 +52,7 @@ function serverRoll(action,actor){
  }
  return a;
 }
-const allowed=new Set(['reserve-character','confirm-character','release-character','set-character-level','set-npc-level','set-goal-visibility','set-blood-pool','set-blood-visibility','adjust-masquerade','set-masquerade-visibility','set-public-viewer','set-death','set-npc-visible','save-note','save-custom-npc','delete-custom-npc','set-room-visible','save-room-description','set-day','set-health','set-willpower','record-roll','post-message','comment-roll','save-event','toggle-event','delete-event','delete-journal']);
+const allowed=new Set(['reserve-character','confirm-character','release-character','set-character-level','set-npc-level','set-goal-visibility','set-blood-pool','set-blood-visibility','adjust-masquerade','set-masquerade-visibility','set-public-viewer','set-death','set-npc-visible','save-note','save-custom-npc','save-npc-text','delete-custom-npc','set-room-visible','save-room-description','set-day','set-health','set-willpower','record-roll','post-message','comment-roll','save-event','toggle-event','delete-event','delete-journal']);
 const server=http.createServer(async(req,res)=>{
  try{
   const url=new URL(req.url,'http://localhost');

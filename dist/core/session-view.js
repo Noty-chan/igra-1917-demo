@@ -1,7 +1,10 @@
+export function npcWithEdits(n,state){const edit=state.npcOverrides?.[n.id];return edit?{...n,name:edit.name,role:edit.role,summary:edit.summary,layers:[{title:'Сведения ведущего',text:edit.privateText}]}:n;}
 /** Only disclosed data leaves the server. Stable IDs keep the existing UI intact. */
 export function sessionView(content, state, actor) {
   const game=structuredClone(content), view=structuredClone(state);
+  game.npcs=game.npcs.map(n=>npcWithEdits(n,state));
   if(actor.role==='gm')return {content:game,state:view,actor};
+  view.npcOverrides={};
   game.gmGuide=[];
   game.cleanNight={...game.cleanNight,text:''};
   view.events=view.events.filter(e=>e.visible);
