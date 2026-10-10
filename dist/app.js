@@ -1,16 +1,16 @@
-import {npcWithEdits} from './core/session-view.js?v=20';
-import {networkLogin,createNetworkSession} from './core/network-session.js?v=20';
+import {npcWithEdits} from './core/session-view.js?v=21';
+import {networkLogin,createNetworkSession} from './core/network-session.js?v=21';
 const network=window.IGRA_NETWORK===true;
 let initial=network?await networkLogin():null;
 const authenticatedActor=initial?.actor;
 let previewCharacter='';
-let game=network?initial.content:(await import('./content/game.js?v=20')).gameContent;
-import { disciplineReference } from './content/disciplines.js?v=20';
-import { archetypeReference } from './content/archetypes.js?v=20';
-import { ownedCharacter } from './core/state.js?v=20';
-import { createLocalSession } from './core/local-session.js?v=20';
-import { healthLevels, damagePenalty, throwD10, visibleJournal } from './core/dice.js?v=20';
-import { applyAtmosphere, decorateTitles } from './core/atmosphere.js?v=20';
+let game=network?initial.content:(await import('./content/game.js?v=21')).gameContent;
+import { disciplineReference } from './content/disciplines.js?v=21';
+import { archetypeReference } from './content/archetypes.js?v=21';
+import { ownedCharacter } from './core/state.js?v=21';
+import { createLocalSession } from './core/local-session.js?v=21';
+import { healthLevels, damagePenalty, throwD10, visibleJournal } from './core/dice.js?v=21';
+import { applyAtmosphere, decorateTitles } from './core/atmosphere.js?v=21';
 import { requireDemoLogin } from './core/access.js';
 
 if(!network)await requireDemoLogin();

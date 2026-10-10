@@ -2916,7 +2916,7 @@ export const gameContent = {
       "id": "npc-muska",
       "name": "Муська",
       "role": "",
-      "summary": "",
+      "summary": "Гончая собака с искренним взглядом",
       "portrait": {
         "src": "assets/npcs/muska.webp",
         "alt": "Портрет: Муська"

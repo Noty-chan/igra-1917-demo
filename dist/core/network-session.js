@@ -1,4 +1,4 @@
-import {sessionView} from './session-view.js?v=20';
+import {sessionView} from './session-view.js?v=21';
 export async function networkLogin(){
   const form=document.querySelector('#login-form'),error=document.querySelector('#login-error');
   document.querySelector('label[for="login-username"]').textContent='Ваше имя';
