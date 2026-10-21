@@ -1,4 +1,4 @@
-import { hydrateState, transition, validateContent } from './state.js?v=21';
+import { hydrateState, transition, validateContent } from './state.js?v=22';
 
 /** Device-local workbench only; production will use an authenticated API. */
 export function createLocalSession(content, storage, key = 'igra-workbench-v1') {
